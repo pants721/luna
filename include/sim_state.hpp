@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 struct SimState {
@@ -21,6 +22,9 @@ struct SimState {
         x(n), y(n), z(n), 
         vx(n), vy(n), vz(n),
         ax(n), ay(n), az(n) {}
+
+    SimState(size_t n, std::pair<double, double> mass_range, 
+             std::pair<double, double> pos_range);
 
     // Initialize n bodies with mass and pos within ranges
     SimState(size_t n, std::pair<double, double> mass_range, 

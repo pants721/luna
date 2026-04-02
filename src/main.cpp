@@ -1,55 +1,30 @@
+#include <GL/gl.h>
 #include <stdio.h>
-#include <GLFW/glfw3.h>
 
+#include "gfx/renderer.hpp"
+#include "constants.hpp"
 #include "sim_state.hpp"
 
-#define DT 0.001
+int main() {
+    SimState state(1e4, {1e9, 1e11}, {-2e5,2e5});
+    sf::ContextSettings settings;
+    settings.antiAliasingLevel = 8;
+    Renderer renderer(SCREEN_W, SCREEN_H, "N-Body", settings);
+    glPointSize(5.f);
+    sf::Clock clock;
 
-int main(int argc, char **argv) {
-    SimState state(50, {0.001, 1.0}, {0.0, 15.0}, {0.0, 15.0}, {0.0, 15.0});
-
-    if (!glfwInit()) {
-        return -1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glEnable(GL_DEPTH_TEST);
-
-
-    GLFWwindow* window = glfwCreateWindow(800, 600, "N-Body Visualization", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-
-    const double fixed_dt = 0.01; // e.g., 100 updates per second
-    double accumulator = 0.0;
-    double lastFrame = glfwGetTime();
-
-    while (!glfwWindowShouldClose(window)) {
-        double currentFrame = glfwGetTime();
-        double frameTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        accumulator += frameTime;
-
-        // Update physics in fixed increments
-        while (accumulator >= fixed_dt) {
-            step(state, fixed_dt);
-            accumulator -= fixed_dt;
+    while (renderer.window.isOpen()) {
+        while (const std::optional event = renderer.window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                renderer.window.close();
+            }
         }
-
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        float dt = clock.restart().asSeconds();
+        if (!renderer.paused) {
+            step(state, 0.1);
+        }
+        renderer.window.clear(sf::Color::Black);
+        renderer.draw(state);
+        renderer.window.display();
     }
-
-    glfwTerminate();
-    return 0;
-
-    return 0;
 }

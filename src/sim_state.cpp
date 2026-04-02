@@ -2,9 +2,28 @@
 
 #include "constants.hpp"
 
+#include <cstddef>
 #include <random>
 #include <thread>
+#include <utility>
 #include <vector>
+
+SimState::SimState(size_t n, std::pair<double, double> mass_range,
+                   std::pair<double, double> pos_range) : SimState(n) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::uniform_real_distribution<> mass_distr(mass_range.first, mass_range.second);
+    std::uniform_real_distribution<> pos_distr(pos_range.first, pos_range.second);
+
+    for (size_t i = 0; i < n; ++i) {
+        mass[i] = mass_distr(gen);
+        x[i] = pos_distr(gen);
+        y[i] = pos_distr(gen);
+        z[i] = pos_distr(gen);
+    }
+
+}
 
 SimState::SimState(size_t n, std::pair<double, double> mass_range, 
          std::pair<double, double> x_range, 

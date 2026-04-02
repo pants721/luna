@@ -11,11 +11,11 @@ project(
 
 incdir = include_directories('include')
 
-glfw_dep = dependency('glfw3')
-gl_dep = dependency('gl')
+sfml_dep = dependency('sfml')
+gl_dep = dependency('opengl')
 
 dependencies = [
-  glfw_dep,
+  sfml_dep,
   gl_dep,
 ]
 
@@ -23,6 +23,7 @@ exe = executable(
   'luna',
   'src/main.cpp',
   'src/sim_state.cpp',
+  'src/gfx/renderer.cpp',
   cpp_args: [
     '-O3',
     '-march=native',
