@@ -5,12 +5,14 @@
 #include "constants.hpp"
 #include "sim_state.hpp"
 
+#define N 1e4
+
 int main() {
-    SimState state(1e4, {1e9, 1e11}, {-2e5,2e5});
+    SimState state(N, {1e9, 1e11}, {-2e5,2e5});
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 8;
     Renderer renderer(SCREEN_W, SCREEN_H, "N-Body", settings);
-    glPointSize(5.f);
+    glPointSize(2.f);
     sf::Clock clock;
 
     while (renderer.window.isOpen()) {
@@ -21,7 +23,7 @@ int main() {
         }
         float dt = clock.restart().asSeconds();
         if (!renderer.paused) {
-            step(state, 0.1);
+            step(state, 0.01);
         }
         renderer.window.clear(sf::Color::Black);
         renderer.draw(state);

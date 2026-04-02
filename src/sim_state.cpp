@@ -52,20 +52,20 @@ void reset(SimState &state) {
     std::fill(state.az.begin(), state.az.end(), 0.0);
 }
 
-void compute(SimState &state) {
-    for (size_t i = 0; i < state.n; ++i) {
+void computeForcesRange(SimState &s, size_t start, size_t end) {
+    for (size_t i = start; i < end; ++i) {
         double ax = 0, ay = 0, az = 0;
-        for (size_t j = 0; j < state.n; ++j) {
-            double mi = state.mass[i];
-            double mj = state.mass[j];
+        for (size_t j = 0; j < s.n; ++j) {
+            double mi = s.mass[i];
+            double mj = s.mass[j];
 
-            double xi = state.x[i];
-            double yi = state.y[i];
-            double zi = state.z[i];
+            double xi = s.x[i];
+            double yi = s.y[i];
+            double zi = s.z[i];
 
-            double xj = state.x[j];
-            double yj = state.y[j];
-            double zj = state.z[j];
+            double xj = s.x[j];
+            double yj = s.y[j];
+            double zj = s.z[j];
 
             // calculate r_ij
             double dx = xj - xi;
@@ -82,36 +82,70 @@ void compute(SimState &state) {
             az += G * mj * dz * r_inv_cub;
         }
 
-        state.ax[i] = ax;
-        state.ay[i] = ay;
-        state.az[i] = az;
+        s.ax[i] = ax;
+        s.ay[i] = ay;
+        s.az[i] = az;
     }
 }
 
-void integrate(SimState &state, double dt) {
-    for (size_t i = 0; i < state.n; ++i) {
-        // kick
-        state.vx[i] += 0.5 * state.ax[i] * dt;
-        state.vy[i] += 0.5 * state.ay[i] * dt;
-        state.vz[i] += 0.5 * state.az[i] * dt;
+void computeForces(SimState &s) {
+    size_t n_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+    size_t chunk_size = s.n / n_threads;
 
-        // drift
-        state.x[i] += state.vx[i] * dt;
-        state.y[i] += state.vy[i] * dt;
-        state.z[i] += state.vz[i] * dt;
-
-        // kick
-        state.vx[i] += 0.5 * state.ax[i] * dt;
-        state.vy[i] += 0.5 * state.ay[i] * dt;
-        state.vz[i] += 0.5 * state.az[i] * dt;
-
+    for (size_t t = 0; t < n_threads; t++) {
+        size_t start = t * chunk_size;
+        size_t end = std::min(start + chunk_size, s.n);
+        if (start < end) {
+            threads.emplace_back(computeForcesRange, std::ref(s), start, end);
+        }
     }
 
+    for (auto &th : threads) {
+        th.join();
+    }
+}
+
+void integrateRange(SimState &s, double dt, size_t start, size_t end) {
+    for (size_t i = start; i < end; ++i) {
+        // kick
+        s.vx[i] += 0.5 * s.ax[i] * dt;
+        s.vy[i] += 0.5 * s.ay[i] * dt;
+        s.vz[i] += 0.5 * s.az[i] * dt;
+
+        // drift
+        s.x[i] += s.vx[i] * dt;
+        s.y[i] += s.vy[i] * dt;
+        s.z[i] += s.vz[i] * dt;
+
+        // kick
+        s.vx[i] += 0.5 * s.ax[i] * dt;
+        s.vy[i] += 0.5 * s.ay[i] * dt;
+        s.vz[i] += 0.5 * s.az[i] * dt;
+    }
+}
+
+void integrate(SimState &s, double dt) {
+    size_t n_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+    size_t chunk_size = s.n / n_threads;
+
+    for (size_t t = 0; t < n_threads; t++) {
+        size_t start = t * chunk_size;
+        size_t end = std::min(start + chunk_size, s.n);
+        if (start < end) {
+            threads.emplace_back(integrateRange, std::ref(s), dt, start, end);
+        }
+    }
+
+    for (auto &th : threads) {
+        th.join();
+    }
 }
 
 void step(SimState &state, double dt) {
     reset(state);
-    compute(state);
+    computeForces(state);
     integrate(state, dt);
 }
 
