@@ -34,7 +34,7 @@ struct SimState {
 };
 
 void reset(SimState &state);
-void compute(SimState &state);
-void integrate(SimState &state, double dt);
-void step(SimState &state, double dt);
+void computeForces(SimState &state);
+void integrate(SimState &current, SimState &next, double dt);
+void step(SimState &current, SimState &next, double dt);
 void printState(SimState &state, int step);

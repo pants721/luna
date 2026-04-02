@@ -1,5 +1,6 @@
 #include <GL/gl.h>
 #include <stdio.h>
+#include <utility>
 
 #include "gfx/renderer.hpp"
 #include "constants.hpp"
@@ -8,7 +9,8 @@
 #define N 1e4
 
 int main() {
-    SimState state(N, {1e9, 1e11}, {-2e5,2e5});
+    SimState current(N, {1e9, 1e11}, {-2e5,2e5});
+    SimState next(N);
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 8;
     Renderer renderer(SCREEN_W, SCREEN_H, "N-Body", settings);
@@ -23,10 +25,10 @@ int main() {
         }
         float dt = clock.restart().asSeconds();
         if (!renderer.paused) {
-            step(state, 0.01);
+            step(current, next, 0.01);
         }
         renderer.window.clear(sf::Color::Black);
-        renderer.draw(state);
+        renderer.draw(current);
         renderer.window.display();
     }
 }
