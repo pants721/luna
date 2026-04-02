@@ -11,7 +11,12 @@ project(
 
 incdir = include_directories('include')
 
+glfw_dep = dependency('glfw3')
+gl_dep = dependency('gl')
+
 dependencies = [
+  glfw_dep,
+  gl_dep,
 ]
 
 exe = executable(

@@ -3,6 +3,8 @@
 #include "constants.hpp"
 
 #include <random>
+#include <thread>
+#include <vector>
 
 SimState::SimState(size_t n, std::pair<double, double> mass_range, 
          std::pair<double, double> x_range, 
@@ -33,6 +35,7 @@ void reset(SimState &state) {
 
 void compute(SimState &state) {
     for (size_t i = 0; i < state.n; ++i) {
+        double ax = 0, ay = 0, az = 0;
         for (size_t j = 0; j < state.n; ++j) {
             double mi = state.mass[i];
             double mj = state.mass[j];
@@ -51,15 +54,18 @@ void compute(SimState &state) {
             double dz = zj - zi;
 
             double r_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
-            double r_cub = sqrt(r_sq) * r_sq;
+            double r_inv_cub = 1.0 / (sqrt(r_sq) * r_sq);
 
             // Newton's law of universal gravitation: https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation
             // calculate a_i
-            state.ax[i] += G * mj * dx / r_cub;
-            state.ay[i] += G * mj * dy / r_cub;
-            state.az[i] += G * mj * dz / r_cub;
-
+            ax += G * mj * dx * r_inv_cub;
+            ay += G * mj * dy * r_inv_cub;
+            az += G * mj * dz * r_inv_cub;
         }
+
+        state.ax[i] = ax;
+        state.ay[i] = ay;
+        state.az[i] = az;
     }
 }
 
