@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <execution>
+#include <iostream>
 #include <numeric>
 #include <random>
 #include <cmath>
@@ -51,29 +52,43 @@ void computeForces(SimState &s) {
 
     // Parallel + Vectorized execution policy
     std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
-        double ax = 0, ay = 0, az = 0;
-        double xi = s.x[i], yi = s.y[i], zi = s.z[i];
+        float ax = 0, ay = 0, az = 0;
+        float xi = (float)s.x[i], yi = (float)s.y[i], zi = (float)s.z[i];
+        float mi = (float)s.mass[i];
 
         #pragma omp simd
         for (size_t j = 0; j < s.n; ++j) {
             if (i == j) continue;
+            float xj = (float)s.x[j], yj = (float)s.y[j], zj = (float)s.z[j];
+            float mj = (float)s.mass[j];
 
-            double dx = s.x[j] - xi;
-            double dy = s.y[j] - yi;
-            double dz = s.z[j] - zi;
+            float dx = xj - xi;
+            float dy = yj - yi;
+            float dz = zj - zi;
 
-            double r_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
-            double r_inv_cub = 1.0 / (std::sqrt(r_sq) * r_sq);
+            float dist_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
 
-            double common = G * s.mass[j] * r_inv_cub;
+            // hardware approximation of 1/sqrt(dist_sq)
+            __m128 reg_dist_sq = _mm_set_ss(dist_sq);
+            __m128 reg_rsqrt = _mm_rsqrt_ss(reg_dist_sq);
+            float r_inv = _mm_cvtss_f32(reg_rsqrt);
+
+            // Newton-Raphson Refinement
+            // doubles the precision of the approximation
+            r_inv = r_inv * (1.5f - 0.5f * dist_sq * r_inv * r_inv);
+
+            float r_inv_sq = r_inv * r_inv;
+            float r_inv_cub = r_inv_sq * r_inv;
+
+            float common = (float)G * mj * r_inv_cub;
             ax += dx * common;
             ay += dy * common;
             az += dz * common;
         }
 
-        s.ax[i] = ax;
-        s.ay[i] = ay;
-        s.az[i] = az;
+        s.ax[i] = (double)ax;
+        s.ay[i] = (double)ay;
+        s.az[i] = (double)az;
     });
 }
 
@@ -99,6 +114,8 @@ void integrate(SimState &current, SimState &next, double dt) {
         next.vx[i] = vx_half; 
         next.vy[i] = vy_half;
         next.vz[i] = vz_half;
+
+        if (std::isnan(next.x[i])) std::cout << "EXPLOSION!" << '\n';
     });
 }
 
