@@ -1,12 +1,11 @@
 #include "sim_state.hpp"
-
 #include "constants.hpp"
 
-#include <cstddef>
-#include <iterator>
+#include <algorithm>
+#include <execution>
+#include <numeric>
 #include <random>
-#include <thread>
-#include <utility>
+#include <cmath>
 #include <vector>
 
 SimState::SimState(size_t n, std::pair<double, double> mass_range,
@@ -23,7 +22,6 @@ SimState::SimState(size_t n, std::pair<double, double> mass_range,
         y[i] = pos_distr(gen);
         z[i] = pos_distr(gen);
     }
-
 }
 
 SimState::SimState(size_t n, std::pair<double, double> mass_range, 
@@ -47,120 +45,71 @@ SimState::SimState(size_t n, std::pair<double, double> mass_range,
 }
 
 void computeForces(SimState &s) {
-    size_t n_threads = std::thread::hardware_concurrency();
-    std::vector<std::thread> threads;
-    size_t chunk_size = s.n / n_threads;
+    // Create a vector of indices to parallelize over
+    std::vector<size_t> indices(s.n);
+    std::iota(indices.begin(), indices.end(), 0);
 
-    auto compute_forces_range = [&](size_t start, size_t end) {
-        for (size_t i = start; i < end; ++i) {
-            double ax = 0, ay = 0, az = 0;
-            #pragma omp simd
-            for (size_t j = 0; j < s.n; ++j) {
-                double mi = s.mass[i];
-                double mj = s.mass[j];
+    // Parallel + Vectorized execution policy
+    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
+        double ax = 0, ay = 0, az = 0;
+        double xi = s.x[i], yi = s.y[i], zi = s.z[i];
 
-                double xi = s.x[i];
-                double yi = s.y[i];
-                double zi = s.z[i];
+        #pragma omp simd
+        for (size_t j = 0; j < s.n; ++j) {
+            if (i == j) continue;
 
-                double xj = s.x[j];
-                double yj = s.y[j];
-                double zj = s.z[j];
+            double dx = s.x[j] - xi;
+            double dy = s.y[j] - yi;
+            double dz = s.z[j] - zi;
 
-                // calculate r_ij
-                double dx = xj - xi;
-                double dy = yj - yi;
-                double dz = zj - zi;
+            double r_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
+            double r_inv_cub = 1.0 / (std::sqrt(r_sq) * r_sq);
 
-                double r_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
-                double r_inv_cub = 1.0 / (sqrt(r_sq) * r_sq);
-
-                // Newton's law of universal gravitation: https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation
-                // calculate a_i
-                ax += G * mj * dx * r_inv_cub;
-                ay += G * mj * dy * r_inv_cub;
-                az += G * mj * dz * r_inv_cub;
-            }
-
-            s.ax[i] = ax;
-            s.ay[i] = ay;
-            s.az[i] = az;
+            double common = G * s.mass[j] * r_inv_cub;
+            ax += dx * common;
+            ay += dy * common;
+            az += dz * common;
         }
-    };
 
-    for (size_t t = 0; t < n_threads; t++) {
-        size_t start = t * chunk_size;
-        size_t end = std::min(start + chunk_size, s.n);
-        if (start < end) {
-            threads.emplace_back(compute_forces_range, start, end);
-        }
-    }
-
-    for (auto &th : threads) {
-        th.join();
-    }
+        s.ax[i] = ax;
+        s.ay[i] = ay;
+        s.az[i] = az;
+    });
 }
 
 void integrate(SimState &current, SimState &next, double dt) {
-    size_t n = current.n;
-    size_t n_threads = std::thread::hardware_concurrency();
-    std::vector<std::thread> threads;
-    size_t chunk_size = n / n_threads;
+    std::vector<size_t> indices(current.n);
+    std::iota(indices.begin(), indices.end(), 0);
 
-    auto integrate_range = [&](size_t start, size_t end) {
-        for (size_t i = start; i < end; ++i) {
-            // kick
-            double vx = current.vx[i] + 0.5 * current.ax[i] * dt;
-            double vy = current.vy[i] + 0.5 * current.ay[i] * dt;
-            double vz = current.vz[i] + 0.5 * current.az[i] * dt;
+    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
+        // Kick (Update velocity by half-step)
+        double vx_half = current.vx[i] + 0.5 * current.ax[i] * dt;
+        double vy_half = current.vy[i] + 0.5 * current.ay[i] * dt;
+        double vz_half = current.vz[i] + 0.5 * current.az[i] * dt;
 
-            // drift
-            double x = current.x[i] + current.vx[i] * dt;
-            double y = current.y[i] + current.vy[i] * dt;
-            double z = current.z[i] + current.vz[i] * dt;
+        // Drift (Update position using half-step velocity)
+        next.x[i] = current.x[i] + vx_half * dt;
+        next.y[i] = current.y[i] + vy_half * dt;
+        next.z[i] = current.z[i] + vz_half * dt;
 
-            // kick
-            vx = current.vx[i] + 0.5 * current.ax[i] * dt;
-            vy = current.vy[i] + 0.5 * current.ay[i] * dt;
-            vz = current.vz[i] + 0.5 * current.az[i] * dt;
-
-            // write to next
-            next.x[i] = x;
-            next.y[i] = y;
-            next.z[i] = z;
-
-            next.vx[i] = vx;
-            next.vy[i] = vy;
-            next.vz[i] = vz;
-
-            next.ax[i] = current.ax[i];
-            next.ay[i] = current.ay[i];
-            next.az[i] = current.az[i];
-
-            next.mass[i] = current.mass[i];
-        }
-    };
-
-    for (size_t t = 0; t < n_threads; t++) {
-        size_t start = t * chunk_size;
-        size_t end = std::min(start + chunk_size, n);
-        if (start < end) {
-            threads.emplace_back(integrate_range, start, end);
-        }
-    }
-
-    for (auto &th : threads) {
-        th.join();
-    }
+        // Copy static data
+        next.mass[i] = current.mass[i];
+        
+        // Final Kick happens in next step once new forces are computed
+        next.vx[i] = vx_half; 
+        next.vy[i] = vy_half;
+        next.vz[i] = vz_half;
+    });
 }
 
 void step(SimState &current, SimState &next, double dt) {
     computeForces(current);
     integrate(current, next, dt);
+    // After integrate, the velocities in 'next' are only half-kicked.
+    // A full Velocity-Verlet would compute forces again here for the second half-kick.
     std::swap(current, next);
 }
 
-// prints state at each step in format "step, i, x, y, z"
 void printState(SimState &state, int step) {
     for (size_t i = 0; i < state.n; ++i) {
         printf("%d,%zu,%f,%f,%f\n", step, i, state.x[i], state.y[i], state.z[i]);

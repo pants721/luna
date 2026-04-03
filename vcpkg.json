@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": [
     "opengl",
+    "tbb",
     {
       "name": "sfml",
       "version>=": "3.0.2"

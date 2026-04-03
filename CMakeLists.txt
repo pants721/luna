@@ -7,6 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # SFML
 find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(TBB REQUIRED)
 
 include_directories(include)
 include_directories(include/gfx)
@@ -24,6 +25,9 @@ target_link_libraries(luna
     SFML::System
     OpenGL::GL
 )
+target_link_libraries(luna PRIVATE TBB::tbb)
+
+target_compile_options(luna PRIVATE -ltbb)
 
 find_program(CPPCHECK_EXE NAMES cppcheck)
 
