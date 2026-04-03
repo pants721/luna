@@ -36,5 +36,6 @@ struct Ephemeris {
 void reset(Ephemeris &state);
 void computeForces(Ephemeris &state);
 void integrate(Ephemeris &current, Ephemeris &next, double dt);
+void finalKick(Ephemeris &current, Ephemeris &next, double dt);
 void step(Ephemeris &current, Ephemeris &next, double dt);
 void printState(Ephemeris &state, int step);

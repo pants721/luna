@@ -57,6 +57,7 @@ int main() {
     settings.antiAliasingLevel = 8;
     sf::RenderWindow window(sf::VideoMode({WIN_W, WIN_H}), WIN_TITLE, sf::Style::Default, sf::State::Windowed, settings);
     window.setFramerateLimit(60);
+    window.clear();
     glPointSize(2.0f);
 
     Ephemeris current(N, {1e2, 1e4}, {-200, 200});
@@ -72,11 +73,10 @@ int main() {
         step(current, next, DT);
 
         // sf::RectangleShape fade(sf::Vector2f(WIN_W, WIN_H));
-        // fade.setFillColor(sf::Color(0, 0, 0, 10));
+        // fade.setFillColor(sf::Color(0, 0, 0, 5));
         // window.draw(fade);
 
         window.clear();
-
 
         render(current, window);
 

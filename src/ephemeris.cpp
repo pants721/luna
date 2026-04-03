@@ -119,11 +119,22 @@ void integrate(Ephemeris &current, Ephemeris &next, double dt) {
     });
 }
 
+void finalKick(Ephemeris &current, Ephemeris &next, double dt) {
+    std::vector<size_t> indices(current.n);
+    std::iota(indices.begin(), indices.end(), 0);
+
+    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
+        next.vx[i] += 0.5 * next.ax[i] * dt;
+        next.vy[i] += 0.5 * next.ay[i] * dt;
+        next.vz[i] += 0.5 * next.az[i] * dt;
+    });
+}
+
 void step(Ephemeris &current, Ephemeris &next, double dt) {
     computeForces(current);
     integrate(current, next, dt);
-    // After integrate, the velocities in 'next' are only half-kicked.
-    // A full Velocity-Verlet would compute forces again here for the second half-kick.
+    computeForces(next);
+    finalKick(current, next, dt);
     std::swap(current, next);
 }
 
