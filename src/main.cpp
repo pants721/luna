@@ -4,7 +4,7 @@
 #include "constants.hpp"
 #include "sim_state.hpp"
 
-#define N 1e3
+#define N 1e4
 #define DT 0.01
 #define RUNS 5000
 
@@ -14,6 +14,5 @@ int main() {
 
     for (int i = 0; i < RUNS; i++) {
         step(current, next, DT);
-        printState(current, i);
     }
 }

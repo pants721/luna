@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "my-project",
+  "version": "1.0.0",
+  "dependencies": [
+    "opengl",
+    {
+      "name": "sfml",
+      "version>=": "3.0.2"
+    }
+  ],
+  "builtin-baseline": "cb2981c4e03d421fa03b9bb5044cd1986180e7e4"
+}
