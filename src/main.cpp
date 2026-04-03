@@ -18,7 +18,7 @@
 #include <SFML/Window.hpp>
 
 #include "constants.hpp"
-#include "sim_state.hpp"
+#include "ephemeris.hpp"
 
 #define N 1000
 #define DT 0.01
@@ -31,7 +31,7 @@
 
 #define RENDER_SCALE 1.0f
 
-void render(SimState &state, sf::RenderWindow &window) {
+void render(Ephemeris &state, sf::RenderWindow &window) {
     sf::VertexArray points(sf::PrimitiveType::Points, state.n);
 
     for (int i = 0; i < state.n; ++i) {
@@ -59,8 +59,8 @@ int main() {
     window.setFramerateLimit(60);
     glPointSize(2.0f);
 
-    SimState current(N, {1e2, 1e4}, {-200, 200});
-    SimState next(N);
+    Ephemeris current(N, {1e2, 1e4}, {-200, 200});
+    Ephemeris next(N);
 
     while (window.isOpen()) {
         while (const std::optional event = window.pollEvent()) {

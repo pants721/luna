@@ -13,10 +13,8 @@ include_directories(include)
 include_directories(include/gfx)
 
 add_executable(luna
-        include/constants.hpp
-        include/sim_state.hpp
         src/main.cpp
-        src/sim_state.cpp)
+        src/ephemeris.cpp)
 
 target_link_libraries(luna 
     PRIVATE 

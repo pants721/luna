@@ -1,4 +1,4 @@
-#include "sim_state.hpp"
+#include "ephemeris.hpp"
 #include "constants.hpp"
 
 #include <algorithm>
@@ -9,8 +9,8 @@
 #include <cmath>
 #include <vector>
 
-SimState::SimState(size_t n, std::pair<double, double> mass_range,
-                   std::pair<double, double> pos_range) : SimState(n) {
+Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
+                   std::pair<double, double> pos_range) : Ephemeris(n) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -25,10 +25,10 @@ SimState::SimState(size_t n, std::pair<double, double> mass_range,
     }
 }
 
-SimState::SimState(size_t n, std::pair<double, double> mass_range, 
+Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range, 
          std::pair<double, double> x_range, 
          std::pair<double, double> y_range,
-         std::pair<double, double> z_range) : SimState(n) {
+         std::pair<double, double> z_range) : Ephemeris(n) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -45,7 +45,7 @@ SimState::SimState(size_t n, std::pair<double, double> mass_range,
     }
 }
 
-void computeForces(SimState &s) {
+void computeForces(Ephemeris &s) {
     // Create a vector of indices to parallelize over
     std::vector<size_t> indices(s.n);
     std::iota(indices.begin(), indices.end(), 0);
@@ -92,7 +92,7 @@ void computeForces(SimState &s) {
     });
 }
 
-void integrate(SimState &current, SimState &next, double dt) {
+void integrate(Ephemeris &current, Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -119,7 +119,7 @@ void integrate(SimState &current, SimState &next, double dt) {
     });
 }
 
-void step(SimState &current, SimState &next, double dt) {
+void step(Ephemeris &current, Ephemeris &next, double dt) {
     computeForces(current);
     integrate(current, next, dt);
     // After integrate, the velocities in 'next' are only half-kicked.
@@ -127,7 +127,7 @@ void step(SimState &current, SimState &next, double dt) {
     std::swap(current, next);
 }
 
-void printState(SimState &state, int step) {
+void printState(Ephemeris &state, int step) {
     for (size_t i = 0; i < state.n; ++i) {
         printf("%d,%zu,%f,%f,%f\n", step, i, state.x[i], state.y[i], state.z[i]);
     }
