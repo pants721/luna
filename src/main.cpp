@@ -1,6 +1,7 @@
 #include <GL/gl.h>
 #include <stdio.h>
 #include <utility>
+#include <immintrin.h>
 
 #include "gfx/renderer.hpp"
 #include "constants.hpp"
@@ -9,7 +10,7 @@
 #define N 1e4
 
 int main() {
-    SimState current(N, {1e9, 1e11}, {-2e5,2e5});
+    SimState current(N, {1e2, 1e4}, {-400, 400});
     SimState next(N);
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 8;

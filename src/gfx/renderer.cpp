@@ -4,7 +4,6 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowEnums.hpp"
 #include "constants.hpp"
-#include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/VideoMode.hpp"
@@ -25,7 +24,7 @@ float scaleRadiusByZLog(float z, float offset = 1.0) {
     return MIN_BODY_RADIUS + t * (MAX_BODY_RADIUS - MIN_BODY_RADIUS);
 }
 
-sf::Color colorFromZ(double z, float scaleFactor = 0.0001f) {
+sf::Color colorFromZ(double z, float scaleFactor = 0.05f) {
     // t ∈ [0,1] indicates relative depth
     float t = std::atan(z * scaleFactor) / (3.14159265f / 2.0f); // [-1,1]
     t = (t + 1.f) / 2.f; // remap to [0,1]
@@ -40,7 +39,9 @@ sf::Vector2f project(float sim_a, float sim_b, const sf::Vector2f &origin, float
 }
 
 Renderer::Renderer(unsigned int w, unsigned int h, const char *title, sf::ContextSettings settings) 
-    : window(sf::VideoMode({w, h}), title, sf::Style::Default, sf::State::Windowed, settings) {}
+    : window(sf::VideoMode({w, h}), title, sf::Style::Default, sf::State::Windowed, settings) {
+    // ImGui::SFML::Init(window);
+}
 
 void Renderer::draw(const SimState &s) {
     sf::VertexArray points(sf::PrimitiveType::Points, s.n);

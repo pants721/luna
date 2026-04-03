@@ -54,6 +54,7 @@ void computeForces(SimState &s) {
     auto compute_forces_range = [&](size_t start, size_t end) {
         for (size_t i = start; i < end; ++i) {
             double ax = 0, ay = 0, az = 0;
+            #pragma omp simd
             for (size_t j = 0; j < s.n; ++j) {
                 double mi = s.mass[i];
                 double mj = s.mass[j];

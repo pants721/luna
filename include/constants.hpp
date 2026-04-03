@@ -19,7 +19,7 @@ constexpr double T0 = 1.0;
 // GFX
 constexpr float SCREEN_W = 1280.0; 
 constexpr float SCREEN_H = 960.0;
-constexpr float PIXELS_PER_UNIT = 0.001 / L0;
+constexpr float PIXELS_PER_UNIT = 1.0 / L0;
 constexpr float MIN_BODY_RADIUS = 0.1;
 constexpr float BODY_RADIUS = 1.5;
 constexpr float MAX_BODY_RADIUS = 3.0;

@@ -12,10 +12,12 @@ project(
 incdir = include_directories('include')
 
 sfml_dep = dependency('sfml')
+# imgui_sfml_dep = dependency('imgui-sfml')
 gl_dep = dependency('opengl')
 
 dependencies = [
   sfml_dep,
+  # imgui_sfml_dep,
   gl_dep,
 ]
 
