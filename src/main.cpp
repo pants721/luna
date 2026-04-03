@@ -3,9 +3,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <cmath>
 #include <cstdio>
 #include <iostream>
@@ -18,7 +20,7 @@
 #include "constants.hpp"
 #include "sim_state.hpp"
 
-#define N 10000
+#define N 1000
 #define DT 0.01
 
 #define WIN_W 1280
@@ -51,11 +53,13 @@ void render(SimState &state, sf::RenderWindow &window) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode({WIN_W, WIN_H}), WIN_TITLE);
+    sf::ContextSettings settings;
+    settings.antiAliasingLevel = 8;
+    sf::RenderWindow window(sf::VideoMode({WIN_W, WIN_H}), WIN_TITLE, sf::Style::Default, sf::State::Windowed, settings);
     window.setFramerateLimit(60);
     glPointSize(2.0f);
 
-    SimState current(N, {1e2, 1e4}, {-400, 400});
+    SimState current(N, {1e2, 1e4}, {-200, 200});
     SimState next(N);
 
     while (window.isOpen()) {
