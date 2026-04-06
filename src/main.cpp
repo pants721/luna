@@ -1,26 +1,18 @@
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/Window/WindowEnums.hpp>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <utility>
 #include <immintrin.h>
-#include <GL/gl.h>
-#include <SFML/Window.hpp>
 
+#include "camera.hpp"
 #include "constants.hpp"
 #include "ephemeris.hpp"
+#include "renderer.hpp"
 
-#define N 1000
+#include <GLFW/glfw3.h>
+
 #define DT 0.01
 
 #define WIN_W 1280
@@ -31,57 +23,53 @@
 
 #define RENDER_SCALE 1.0f
 
-void render(Ephemeris &state, sf::RenderWindow &window) {
-    sf::VertexArray points(sf::PrimitiveType::Points, state.n);
-
-    for (int i = 0; i < state.n; ++i) {
-        float px = (state.x[i] * RENDER_SCALE) + WIN_CENTER_X;
-        float py = (state.y[i] * RENDER_SCALE) + WIN_CENTER_Y;
-        points[i].position = sf::Vector2f(px, py);
-
-        float speed = std::sqrt(
-            state.vx[i] * state.vx[i] + 
-            state.vy[i] * state.vy[i] + 
-            state.vz[i] * state.vz[i]
-        );
-
-
-        points[i].color = sf::Color(189, 79, 55);
-    }
-
-    window.draw(points);
-}
-
 int main() {
-    sf::ContextSettings settings;
-    settings.antiAliasingLevel = 8;
-    sf::RenderWindow window(sf::VideoMode({WIN_W, WIN_H}), WIN_TITLE, sf::Style::Default, sf::State::Windowed, settings);
-    window.setFramerateLimit(60);
-    window.clear();
-    glPointSize(2.0f);
+    glfwInit();
 
-    Ephemeris current(N, {1e2, 1e4}, {-200, 200});
-    Ephemeris next(N);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    while (window.isOpen()) {
-        while (const std::optional event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-            }
-        }
+    GLFWwindow *window = glfwCreateWindow(WIN_W, WIN_H, WIN_TITLE, nullptr, nullptr);
+    glfwMakeContextCurrent(window);
 
+    // glad
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    // load extensions
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_DEPTH_TEST);
+
+    glViewport(0, 0, WIN_W, WIN_H);
+
+    // renderer
+    Renderer renderer(OPENGL);
+    renderer.setup();
+
+    Camera cam;
+
+    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-200, 200});
+    Ephemeris next(NUM_BODIES);
+
+    while (!glfwWindowShouldClose(window)) {
         step(current, next, DT);
 
-        // sf::RectangleShape fade(sf::Vector2f(WIN_W, WIN_H));
-        // fade.setFillColor(sf::Color(0, 0, 0, 5));
-        // window.draw(fade);
+        // clear screen
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        window.clear();
+        // draw your particles here
+        renderer.render(current, cam);
+        renderer.draw(current, cam);
 
-        render(current, window);
+        // swap buffers
+        glfwSwapBuffers(window);
 
-        window.display();
+        // process input/events
+        glfwPollEvents();
     }
 
-    return 0;
+    glfwTerminate();
+
+    return EXIT_SUCCESS;
 }
