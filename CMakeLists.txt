@@ -9,6 +9,7 @@ find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
 find_package(TBB REQUIRED)
 
 include_directories(include)
@@ -17,6 +18,7 @@ include_directories(include/gfx)
 add_executable(luna
         src/main.cpp
         src/gfx/renderer.cpp
+        src/gfx/camera.cpp
         src/ephemeris.cpp)
 
 target_link_libraries(luna 
@@ -27,6 +29,7 @@ target_link_libraries(luna
     OpenGL::GL
     glad::glad
     glfw
+    glm::glm
 )
 target_link_libraries(luna PRIVATE TBB::tbb)
 

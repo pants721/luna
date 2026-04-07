@@ -6,6 +6,7 @@
     "opengl",
     "glad",
     "glfw3",
+    "glm",
     "tbb",
     {
       "name": "sfml",

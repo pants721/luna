@@ -14,15 +14,22 @@
 
 #include <GLFW/glfw3.h>
 
-#define DT 0.01
+void processInput(GLFWwindow* window, Camera &cam, float delta_time) {
+    float velocity = cam.config.move_speed * delta_time;
 
-#define WIN_W 1280
-#define WIN_H 960
-#define WIN_CENTER_X (WIN_W / 2.0f)
-#define WIN_CENTER_Y (WIN_H / 2.0f)
-#define WIN_TITLE "Luna - Lu(cas)n(body simulator)a"
-
-#define RENDER_SCALE 1.0f
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cam.pos += cam.front * velocity;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cam.pos -= cam.front * velocity;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cam.pos -= cam.right * velocity;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cam.pos += cam.right * velocity;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        cam.pos -= cam.up * velocity;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        cam.pos += cam.up * velocity;
+}
 
 int main() {
     glfwInit();
@@ -54,8 +61,16 @@ int main() {
     Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-200, 200});
     Ephemeris next(NUM_BODIES);
 
+    float last_frame = glfwGetTime();
+
     while (!glfwWindowShouldClose(window)) {
-        step(current, next, DT);
+        float current_frame = glfwGetTime();
+        float delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+
+        processInput(window, cam, delta_time);
+
+        step(current, next, TIME_STEP);
 
         // clear screen
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
