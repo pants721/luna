@@ -32,9 +32,9 @@ struct Renderer {
     GraphicsBackend gfx_backend; 
     OpenGLData opengl_data;
 
-    std::vector<float> vertex_buffer;
+    float *vbo_buffer;
 
-    Renderer(GraphicsBackend gfx_backend) : gfx_backend(gfx_backend), vertex_buffer(MAX_BODIES * 3) {}
+    Renderer(GraphicsBackend gfx_backend) : gfx_backend(gfx_backend) {}
     void setup();
     void render(Ephemeris &world, Camera &cam);
     void draw(Ephemeris &world, Camera &cam);

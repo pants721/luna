@@ -14,16 +14,18 @@ void Renderer::setup() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     opengl_data.loadShadersFromFiles(VERTEX_SHADER, FRAG_SHADER);
     opengl_data.createVertexObjects();
+    vbo_buffer = (float *) glMapBufferRange(GL_ARRAY_BUFFER,
+                                                0,
+                                                MAX_BODIES * 3 * sizeof(float),
+                                                GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 }
 
 void Renderer::render(Ephemeris &world, Camera &cam) {
     for (int i = 0; i < world.n; i++) {
-        vertex_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
-        vertex_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
-        vertex_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
+        vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
+        vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
+        vbo_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
     }
-    
-    opengl_data.uploadVertices(vertex_buffer);
 }
 
 void Renderer::draw(Ephemeris &world, Camera &cam) {
@@ -38,6 +40,12 @@ void OpenGLData::createVertexObjects() {
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferStorage(GL_ARRAY_BUFFER,
+                    MAX_BODIES * 3 * sizeof(float),
+                    nullptr,
+                    GL_MAP_WRITE_BIT |
+                    GL_MAP_PERSISTENT_BIT |
+                    GL_MAP_COHERENT_BIT);
 
     // XXX: maybe replace 3 with DIM constant
     glBufferData(GL_ARRAY_BUFFER, MAX_BODIES * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
@@ -130,9 +138,4 @@ void OpenGLData::loadShaders(const char *vertex_shader_src, const char *frag_sha
     // delete shaders
     glDeleteShader(vertex_shader);
     glDeleteShader(frag_shader);
-}
-
-void OpenGLData::uploadVertices(std::vector<float> &packed) {
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, packed.size() * sizeof(float), packed.data());
 }
