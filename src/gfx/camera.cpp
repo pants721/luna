@@ -15,7 +15,7 @@ glm::mat4 Camera::projectionMat() {
     return glm::perspective(
         glm::radians(config.fov),
         (double)WIN_W / (double)WIN_H,
-        0.1, 1000.0
+        0.1, 100.0
     );
 }
 

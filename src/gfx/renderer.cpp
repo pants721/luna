@@ -35,12 +35,16 @@ void Renderer::draw(Ephemeris &world, Camera &cam) {
 
     glm::mat4 cam_view = cam.viewMat();
     glm::mat4 cam_proj = cam.projectionMat();
+    glm::mat4 model = glm::mat4(1.0f);
 
     GLuint view_loc = glGetUniformLocation(opengl_data.shader_program, "uView");
     glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(cam_view));
 
     GLuint proj_loc = glGetUniformLocation(opengl_data.shader_program, "uProjection");
     glUniformMatrix4fv(proj_loc, 1, GL_FALSE, glm::value_ptr(cam_proj));
+
+    GLuint model_loc = glGetUniformLocation(opengl_data.shader_program, "uModel");
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(opengl_data.vao);
     glDrawArrays(GL_POINTS, 0, world.n);
