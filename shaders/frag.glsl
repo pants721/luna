@@ -5,7 +5,7 @@ out vec4 FragColor;
 
 layout(location = 0) in vec3 aPos;
 
-const vec3 starColor = vec3(1.0, 0.0, 0.0);
+const vec3 starColor = vec3(1.0, 1.0, 1.0);
 
 // gaussian falloff constant
 const float sharpness = 5.0;

@@ -15,20 +15,28 @@
 #include <GLFW/glfw3.h>
 
 void processInput(GLFWwindow* window, Camera &cam, float delta_time) {
-    float velocity = cam.config.move_speed * delta_time;
+    float move_velocity = cam.config.move_speed * delta_time;
+    float rot_velocity = cam.config.rot_speed * delta_time;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cam.pos += cam.front * velocity;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cam.pos -= cam.front * velocity;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cam.pos -= cam.right * velocity;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cam.pos += cam.right * velocity;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        cam.pos -= cam.up * velocity;
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        cam.pos += cam.up * velocity;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        cam.move(Camera::FORWARD, delta_time);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        cam.move(Camera::BACKWARD, delta_time);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cam.move(Camera::LEFT, delta_time);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cam.move(Camera::RIGHT, delta_time);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        cam.move(Camera::UP, delta_time);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        cam.move(Camera::DOWN, delta_time);
+    }
 }
 
 int main() {
@@ -62,7 +70,7 @@ int main() {
 
     Camera cam;
 
-    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-200, 200});
+    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-1000, 1000});
     Ephemeris next(NUM_BODIES);
 
     float last_frame = glfwGetTime();
