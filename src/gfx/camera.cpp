@@ -7,6 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
 
+constexpr double NEAR_PLANE = 0.1;
+constexpr double FAR_PLANE = 1000.0;
+
 glm::mat4 Camera::viewMat() {
     return glm::lookAt(pos, target, up);
 }
@@ -15,7 +18,7 @@ glm::mat4 Camera::projectionMat() {
     return glm::perspective(
         glm::radians(config.fov),
         (double)WIN_W / (double)WIN_H,
-        0.1, 100.0
+        NEAR_PLANE, FAR_PLANE
     );
 }
 

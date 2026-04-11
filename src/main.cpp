@@ -57,6 +57,7 @@ int main() {
     // load extensions
     glEnable(GL_PROGRAM_POINT_SIZE);
     // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
     glEnable(GL_POINT_SMOOTH);
     // alpha blending
     glEnable(GL_BLEND);
@@ -70,7 +71,7 @@ int main() {
 
     Camera cam;
 
-    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-1000, 1000});
+    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-300, 300});
     Ephemeris next(NUM_BODIES);
 
     float last_frame = glfwGetTime();
