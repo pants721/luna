@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "dependencies": [
     "opengl",
+    "glad",
+    "glfw3",
+    "glm",
     "tbb",
     {
       "name": "sfml",
