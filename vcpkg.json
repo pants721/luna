@@ -8,6 +8,7 @@
     "glfw3",
     "glm",
     "tbb",
+    "reflectcpp",
     {
       "name": "sfml",
       "version>=": "3.0.2"
