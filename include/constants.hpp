@@ -1,11 +1,11 @@
 #pragma once
 
-constexpr int NUM_BODIES = 1e3;
+#include <string>
+
 constexpr int MAX_BODIES = 1e6;
 
 constexpr double SOFTENING = 1e-12;
 constexpr double TIME_STEP = 0.01;
-
 
 // Units
 
@@ -34,3 +34,5 @@ constexpr float WIN_CENTER_Y = (WIN_H / 2.0f);
 constexpr auto WIN_TITLE = "Luna - Lu(cas)n(body simulator)a";
 
 constexpr float RENDER_SCALE = 1.0f;
+
+constexpr std::string CONFIG_PATH = "config.json";

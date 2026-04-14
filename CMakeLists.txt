@@ -19,6 +19,7 @@ include_directories(include/gfx)
 
 add_executable(luna
         src/main.cpp
+        src/sim_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
         src/ephemeris.cpp)
