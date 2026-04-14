@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16...3.32)
 project(luna LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # SFML
@@ -11,12 +12,14 @@ find_package(glad CONFIG REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(TBB REQUIRED)
+find_package(reflectcpp CONFIG REQUIRED)
 
 include_directories(include)
 include_directories(include/gfx)
 
 add_executable(luna
         src/main.cpp
+        src/sim_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
         src/ephemeris.cpp)
@@ -30,6 +33,7 @@ target_link_libraries(luna
     glad::glad
     glfw
     glm::glm
+    reflectcpp::reflectcpp
 )
 target_link_libraries(luna PRIVATE TBB::tbb)
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sim_config.hpp"
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -31,6 +32,8 @@ struct Ephemeris {
              std::pair<double, double> x_range, 
              std::pair<double, double> y_range,
              std::pair<double, double> z_range);
+
+    Ephemeris(SimConfig config);
 };
 
 void reset(Ephemeris &state);

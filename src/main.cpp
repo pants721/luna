@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <immintrin.h>
 
@@ -11,6 +12,7 @@
 #include "constants.hpp"
 #include "ephemeris.hpp"
 #include "renderer.hpp"
+#include "sim_config.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -71,8 +73,12 @@ int main() {
 
     Camera cam;
 
-    Ephemeris current(NUM_BODIES, {1e2, 1e4}, {-300, 300});
-    Ephemeris next(NUM_BODIES);
+    // load config
+    SimConfig sim_config = load(CONFIG_PATH);
+
+    // set up bodies
+    Ephemeris current(sim_config);
+    Ephemeris next(sim_config.num_bodies);
 
     float last_frame = glfwGetTime();
 
