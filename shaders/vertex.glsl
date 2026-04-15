@@ -1,8 +1,8 @@
 #version 330 core
 
-const float minSize = 5.0;
-const float baseSize = 100.0;
-const float maxSize = 200.0;
+const float minSize = 2.0;
+const float baseSize = 5.0;
+const float maxSize = 100.0;
 
 uniform mat4 uView;
 uniform mat4 uProjection;

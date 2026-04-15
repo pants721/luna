@@ -12,6 +12,8 @@
 #define VERTEX_SHADER "shaders/vertex.glsl"
 #define FRAG_SHADER "shaders/frag.glsl"
 
+namespace gfx {
+
 // enum GraphicsBackend {
 //     OPENGL = 0,
 // };
@@ -40,3 +42,5 @@ struct Renderer {
     void render(physics::Ephemeris &world, Camera &cam);
     void draw(physics::Ephemeris &world, Camera &cam);
 };
+
+}

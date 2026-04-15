@@ -6,6 +6,8 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 
+namespace gfx {
+
 struct CameraConfig {
     double rot_speed;
     double move_speed;
@@ -61,3 +63,5 @@ struct Camera {
 
     void move(Direction dir, float delta_time);
 };
+
+}

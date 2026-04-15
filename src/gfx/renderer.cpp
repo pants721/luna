@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
-void Renderer::setup() {
+using namespace gfx;
+
+void gfx::Renderer::setup() {
     // setup window
     glfwInit();
 
@@ -33,7 +35,9 @@ void Renderer::setup() {
     // alpha blending
     glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE);
+    glDepthMask(GL_FALSE);
 
     glViewport(0, 0, WIN_W, WIN_H);
 
@@ -42,12 +46,12 @@ void Renderer::setup() {
     opengl_data.createVertexObjects();
 }
 
-void Renderer::clear() {
+void gfx::Renderer::clear() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::render(physics::Ephemeris &world, Camera &cam) {
+void gfx::Renderer::render(physics::Ephemeris &world, Camera &cam) {
     for (int i = 0; i < world.n; i++) {
         opengl_data.vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
         opengl_data.vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
@@ -55,7 +59,7 @@ void Renderer::render(physics::Ephemeris &world, Camera &cam) {
     }
 }
 
-void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
+void gfx::Renderer::draw(physics::Ephemeris &world, Camera &cam) {
     glUseProgram(opengl_data.shader_program);
 
     glm::mat4 cam_view = cam.viewMat();
@@ -75,7 +79,7 @@ void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
     glDrawArrays(GL_POINTS, 0, world.n);
 }
 
-void OpenGLData::createVertexObjects() {
+void gfx::OpenGLData::createVertexObjects() {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -102,7 +106,7 @@ void OpenGLData::createVertexObjects() {
                                             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 }
 
-std::string readShaderSource(const std::string& filePath) {
+static std::string readShaderSource(const std::string& filePath) {
     std::ifstream fileStream(filePath);
     
     if (!fileStream.is_open()) {
@@ -115,7 +119,7 @@ std::string readShaderSource(const std::string& filePath) {
     return buffer.str();
 }
 
-void OpenGLData::loadShadersFromFiles(std::string vertex_shader_path, std::string frag_shader_path) {
+void gfx::OpenGLData::loadShadersFromFiles(std::string vertex_shader_path, std::string frag_shader_path) {
     std::string vertex_shader_str = readShaderSource(vertex_shader_path);
     std::string frag_shader_str = readShaderSource(frag_shader_path);
 
@@ -125,7 +129,7 @@ void OpenGLData::loadShadersFromFiles(std::string vertex_shader_path, std::strin
     loadShaders(vertex_shader_src, frag_shader_src);
 }
 
-void OpenGLData::loadShaders(const char *vertex_shader_src, const char *frag_shader_src) {
+void gfx::OpenGLData::loadShaders(const char *vertex_shader_src, const char *frag_shader_src) {
     // vertex shader
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_src, NULL);

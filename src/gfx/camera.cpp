@@ -10,11 +10,11 @@
 constexpr double NEAR_PLANE = 0.1;
 constexpr double FAR_PLANE = 1000.0;
 
-glm::mat4 Camera::viewMat() {
+glm::mat4 gfx::Camera::viewMat() {
     return glm::lookAt(pos, target, up);
 }
 
-glm::mat4 Camera::projectionMat() {
+glm::mat4 gfx::Camera::projectionMat() {
     return glm::perspective(
         glm::radians(config.fov),
         (double)WIN_W / (double)WIN_H,
@@ -22,7 +22,7 @@ glm::mat4 Camera::projectionMat() {
     );
 }
 
-void Camera::updateVectors() {
+void gfx::Camera::updateVectors() {
     front = glm::normalize(target - pos);
     right = glm::normalize(glm::cross(front, up));
     up = glm::normalize(glm::cross(right, front));
@@ -45,7 +45,7 @@ void Camera::updateVectors() {
     // up    = glm::normalize(glm::cross(right, front));
 }
 
-void Camera::move(Camera::Direction dir, float delta_time) {
+void gfx::Camera::move(Camera::Direction dir, float delta_time) {
     float speed = config.move_speed * delta_time;
 
     // Get the vector from the target to the current camera position

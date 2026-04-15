@@ -9,7 +9,8 @@
 
 #include <GLFW/glfw3.h>
 
-void processInput(GLFWwindow* window, Camera &cam, float delta_time) {
+void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
+    using namespace gfx;
     float move_velocity = cam.config.move_speed * delta_time;
     float rot_velocity = cam.config.rot_speed * delta_time;
 
@@ -36,10 +37,10 @@ void processInput(GLFWwindow* window, Camera &cam, float delta_time) {
 
 int main() {
     // renderer
-    Renderer renderer;
+    gfx::Renderer renderer;
     renderer.setup();
 
-    Camera cam;
+    gfx::Camera cam;
 
     // load config
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
