@@ -45,8 +45,8 @@ int main() {
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
     // set up bodies
-    Ephemeris current(sim_config);
-    Ephemeris next(sim_config.num_bodies);
+    physics::Ephemeris current(sim_config);
+    physics::Ephemeris next(sim_config.num_bodies);
 
     float last_frame = glfwGetTime();
 
@@ -57,7 +57,7 @@ int main() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        step(current, next, TIME_STEP);
+        physics::step(current, next, TIME_STEP);
 
         // clear screen
         renderer.clear();

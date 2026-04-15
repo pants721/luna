@@ -1,7 +1,6 @@
 #include "gfx/renderer.hpp"
 #include "constants.hpp"
 #include "camera.hpp"
-#include "ephemeris.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -32,9 +31,9 @@ void Renderer::setup() {
     // glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     // alpha blending
-    // glEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glViewport(0, 0, WIN_W, WIN_H);
 
@@ -48,7 +47,7 @@ void Renderer::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::render(Ephemeris &world, Camera &cam) {
+void Renderer::render(physics::Ephemeris &world, Camera &cam) {
     for (int i = 0; i < world.n; i++) {
         opengl_data.vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
         opengl_data.vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
@@ -56,7 +55,7 @@ void Renderer::render(Ephemeris &world, Camera &cam) {
     }
 }
 
-void Renderer::draw(Ephemeris &world, Camera &cam) {
+void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
     glUseProgram(opengl_data.shader_program);
 
     glm::mat4 cam_view = cam.viewMat();

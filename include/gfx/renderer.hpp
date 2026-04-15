@@ -37,6 +37,6 @@ struct Renderer {
 
     void setup();
     void clear();
-    void render(Ephemeris &world, Camera &cam);
-    void draw(Ephemeris &world, Camera &cam);
+    void render(physics::Ephemeris &world, Camera &cam);
+    void draw(physics::Ephemeris &world, Camera &cam);
 };

@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+namespace physics {
+
 struct Ephemeris {
     size_t n;
 
@@ -43,3 +45,5 @@ void integrate(Ephemeris &current, Ephemeris &next, double dt);
 void finalKick(Ephemeris &current, Ephemeris &next, double dt);
 void step(Ephemeris &current, Ephemeris &next, double dt);
 void printState(Ephemeris &state, int step);
+
+}

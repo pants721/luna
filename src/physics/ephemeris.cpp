@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
-                   std::pair<double, double> pos_range) : Ephemeris(n) {
+physics::Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
+                   std::pair<double, double> pos_range) : physics::Ephemeris(n) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -27,10 +27,10 @@ Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
     }
 }
 
-Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range, 
+physics::Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range, 
          std::pair<double, double> x_range, 
          std::pair<double, double> y_range,
-         std::pair<double, double> z_range) : Ephemeris(n) {
+         std::pair<double, double> z_range) : physics::Ephemeris(n) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -47,7 +47,7 @@ Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
     }
 }
 
-Ephemeris::Ephemeris(cfg::SimConfig config) : Ephemeris(config.num_bodies) {
+physics::Ephemeris::Ephemeris(cfg::SimConfig config) : physics::Ephemeris(config.num_bodies) {
     using namespace cfg;
 
     n = config.num_bodies;
@@ -103,7 +103,7 @@ Ephemeris::Ephemeris(cfg::SimConfig config) : Ephemeris(config.num_bodies) {
     }
 }
 
-void computeForces(Ephemeris &s) {
+void physics::computeForces(physics::Ephemeris &s) {
     // Create a vector of indices to parallelize over
     std::vector<size_t> indices(s.n);
     std::iota(indices.begin(), indices.end(), 0);
@@ -150,7 +150,7 @@ void computeForces(Ephemeris &s) {
     });
 }
 
-void integrate(Ephemeris &current, Ephemeris &next, double dt) {
+void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -177,7 +177,7 @@ void integrate(Ephemeris &current, Ephemeris &next, double dt) {
     });
 }
 
-void finalKick(Ephemeris &current, Ephemeris &next, double dt) {
+void physics::finalKick(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -188,7 +188,7 @@ void finalKick(Ephemeris &current, Ephemeris &next, double dt) {
     });
 }
 
-void step(Ephemeris &current, Ephemeris &next, double dt) {
+void physics::step(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeForces(current);
     integrate(current, next, dt);
     computeForces(next);
@@ -196,7 +196,7 @@ void step(Ephemeris &current, Ephemeris &next, double dt) {
     std::swap(current, next);
 }
 
-void printState(Ephemeris &state, int step) {
+void physics::printState(physics::Ephemeris &state, int step) {
     for (size_t i = 0; i < state.n; ++i) {
         printf("%d,%zu,%f,%f,%f\n", step, i, state.x[i], state.y[i], state.z[i]);
     }
