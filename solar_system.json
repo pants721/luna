@@ -1,0 +1,50 @@
+{
+  "num_bodies": 9,
+  "bodies": [
+    {
+      "mass": 1.0,
+      "initial_pos": { "x": 0.0, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.0, "z": 0.0 }
+    },
+    {
+      "mass": 1.65e-7,
+      "initial_pos": { "x": 0.39, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 1.60, "z": 0.0 }
+    },
+    {
+      "mass": 2.45e-6,
+      "initial_pos": { "x": 0.72, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 1.18, "z": 0.0 }
+    },
+    {
+      "mass": 3.00e-6,
+      "initial_pos": { "x": 1.0, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 1.00, "z": 0.0 }
+    },
+    {
+      "mass": 3.21e-7,
+      "initial_pos": { "x": 1.52, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.81, "z": 0.0 }
+    },
+    {
+      "mass": 9.55e-4,
+      "initial_pos": { "x": 5.20, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.44, "z": 0.0 }
+    },
+    {
+      "mass": 2.86e-4,
+      "initial_pos": { "x": 9.58, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.32, "z": 0.0 }
+    },
+    {
+      "mass": 4.37e-5,
+      "initial_pos": { "x": 19.2, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.23, "z": 0.0 }
+    },
+    {
+      "mass": 5.15e-5,
+      "initial_pos": { "x": 30.05, "y": 0.0, "z": 0.0 },
+      "initial_vel": { "x": 0.0, "y": 0.18, "z": 0.0 }
+    }
+  ]
+}

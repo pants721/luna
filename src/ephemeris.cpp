@@ -62,6 +62,13 @@ Ephemeris::Ephemeris(SimConfig config) : Ephemeris(config.num_bodies) {
             x[i] = body_info.initial_pos.x;
             y[i] = body_info.initial_pos.y;
             z[i] = body_info.initial_pos.z;
+
+            if (body_info.initial_vel.has_value()) {
+                auto initial_vel = body_info.initial_vel.value();
+                vx[i] = initial_vel.x;
+                vy[i] = initial_vel.y;
+                vz[i] = initial_vel.z;
+            }
         }
     }
 

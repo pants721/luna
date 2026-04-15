@@ -5,7 +5,6 @@
 
 #include <cstdlib>
 #include <fstream>
-#include <glm/ext/matrix_float4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <sstream>
@@ -13,20 +12,47 @@
 #include <vector>
 
 void Renderer::setup() {
+    // setup window
+    glfwInit();
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+
+    opengl_data.window = glfwCreateWindow(WIN_W, WIN_H, WIN_TITLE, nullptr, nullptr);
+    glfwSetWindowAttrib(opengl_data.window, GLFW_FLOATING, GLFW_TRUE);
+    glfwMakeContextCurrent(opengl_data.window);
+
+    // glad
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    // load extensions
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+    // alpha blending
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glViewport(0, 0, WIN_W, WIN_H);
+
     glEnable(GL_PROGRAM_POINT_SIZE);
     opengl_data.loadShadersFromFiles(VERTEX_SHADER, FRAG_SHADER);
     opengl_data.createVertexObjects();
-    vbo_buffer = (float *) glMapBufferRange(GL_ARRAY_BUFFER,
-                                                0,
-                                                MAX_BODIES * 3 * sizeof(float),
-                                                GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+}
+
+void Renderer::clear() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::render(Ephemeris &world, Camera &cam) {
     for (int i = 0; i < world.n; i++) {
-        vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
-        vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
-        vbo_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
+        opengl_data.vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
+        opengl_data.vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
+        opengl_data.vbo_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
     }
 }
 
@@ -70,6 +96,11 @@ void OpenGLData::createVertexObjects() {
     glEnableVertexAttribArray(0);
     
     glBindVertexArray(0);
+
+    vbo_buffer = (float *) glMapBufferRange(GL_ARRAY_BUFFER,
+                                            0,
+                                            MAX_BODIES * 3 * sizeof(float),
+                                            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 }
 
 std::string readShaderSource(const std::string& filePath) {

@@ -60,8 +60,8 @@ void Camera::move(Camera::Direction dir, float delta_time) {
     }
 
     // make sure we dont go through center
-    if (orbit_radius < 0.1f) {
-        orbit_radius = 0.1f;
+    if (orbit_radius < NEAR_PLANE) {
+        orbit_radius = NEAR_PLANE;
     }
 
     // handle rotations

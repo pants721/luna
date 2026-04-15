@@ -3,26 +3,24 @@
 
 out vec4 FragColor;
 
-in float vPointSize;
-
-layout(location = 0) in vec3 aPos;
-
-const vec3 starColor = vec3(1.0, 1.0, 1.0);
-
-// gaussian falloff constant
-const float baseSharpness = 5.0;
+const vec3 starColor = vec3(1.0, 0.0, 0.0);
 
 void main()
 {
-    vec2 coord = 2.0 * gl_PointCoord - 1.0; // center at 0
-    float radSq = dot(coord, coord);
+    vec2 coord = gl_PointCoord * 2.0 - 1.0;
+    float r = length(coord);
 
-    if (vPointSize > 2.0 && radSq > 1.0) discard;
+    if (r > 1.0) discard;
 
-    float sharpness = mix(1.0, baseSharpness, clamp(vPointSize / 5.0, 0.0, 1.0));
-    float falloff = exp(-radSq * sharpness);
+    // core + glow
+    float core = exp(-r * 25.0);
+    float glow = exp(-r * 6.0);
+    float intensity = core + 0.5 * glow;
 
-    float edgeFade = smoothstep(1.0, 0.8, radSq);
+    // soft edge
+    float edgeFade = 1.0 - smoothstep(0.9, 1.0, r);
 
-    FragColor = vec4(starColor, falloff * edgeFade);
+    float alpha = intensity * edgeFade;
+
+    FragColor = vec4(starColor * alpha, alpha);
 }

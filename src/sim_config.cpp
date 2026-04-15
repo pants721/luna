@@ -20,12 +20,12 @@ std::pair<double, double> RandConfig::z_range() {
     return {pos_range.first.z, pos_range.second.z};
 }
 
-SimConfig load(std::string file_path) {
+SimConfig SimConfig::load(std::string file_path) {
     auto result = rfl::json::load<SimConfig>(file_path);
     return result.value();
 }
 
-bool save(SimConfig *sim_config, std::string file_path) {
-    rfl::json::save(file_path, sim_config);
+bool SimConfig::save(std::string file_path) {
+    rfl::json::save(file_path, this);
     return true;
 }

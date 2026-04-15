@@ -1,11 +1,4 @@
-#include <chrono>
-#include <cmath>
-#include <cstdio>
 #include <cstdlib>
-#include <iostream>
-#include <memory>
-#include <optional>
-#include <utility>
 #include <immintrin.h>
 
 #include "camera.hpp"
@@ -42,39 +35,14 @@ void processInput(GLFWwindow* window, Camera &cam, float delta_time) {
 }
 
 int main() {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-
-    GLFWwindow *window = glfwCreateWindow(WIN_W, WIN_H, WIN_TITLE, nullptr, nullptr);
-    glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_TRUE);
-    glfwMakeContextCurrent(window);
-
-    // glad
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
-    // load extensions
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    // glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_POINT_SMOOTH);
-    // alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glViewport(0, 0, WIN_W, WIN_H);
-
     // renderer
-    Renderer renderer(OPENGL);
+    Renderer renderer;
     renderer.setup();
 
     Camera cam;
 
     // load config
-    SimConfig sim_config = load(CONFIG_PATH);
+    SimConfig sim_config = SimConfig::load(DEFAULT_CONFIG_PATH);
 
     // set up bodies
     Ephemeris current(sim_config);
@@ -82,25 +50,24 @@ int main() {
 
     float last_frame = glfwGetTime();
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(renderer.opengl_data.window)) {
         float current_frame = glfwGetTime();
         float delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
-        processInput(window, cam, delta_time);
+        processInput(renderer.opengl_data.window, cam, delta_time);
 
         step(current, next, TIME_STEP);
 
         // clear screen
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderer.clear();
 
-        // draw your particles here
+        // draw particles
         renderer.render(current, cam);
         renderer.draw(current, cam);
 
         // swap buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(renderer.opengl_data.window);
 
         // process input/events
         glfwPollEvents();
