@@ -16,13 +16,16 @@ find_package(reflectcpp CONFIG REQUIRED)
 
 include_directories(include)
 include_directories(include/gfx)
+include_directories(include/physics)
+include_directories(include/cfg)
 
 add_executable(luna
         src/main.cpp
-        src/sim_config.cpp
+        src/cfg/sim_config.cpp
+        src/cfg/rand_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
-        src/ephemeris.cpp)
+        src/physics/ephemeris.cpp)
 
 target_link_libraries(luna 
     PRIVATE 

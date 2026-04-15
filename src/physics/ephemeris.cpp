@@ -1,6 +1,6 @@
-#include "ephemeris.hpp"
+#include "physics/ephemeris.hpp"
 #include "constants.hpp"
-#include "sim_config.hpp"
+#include "cfg/sim_config.hpp"
 
 #include <algorithm>
 #include <execution>
@@ -47,7 +47,9 @@ Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
     }
 }
 
-Ephemeris::Ephemeris(SimConfig config) : Ephemeris(config.num_bodies) {
+Ephemeris::Ephemeris(cfg::SimConfig config) : Ephemeris(config.num_bodies) {
+    using namespace cfg;
+
     n = config.num_bodies;
 
     // preconfigured bodies

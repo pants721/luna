@@ -3,9 +3,9 @@
 
 #include "camera.hpp"
 #include "constants.hpp"
-#include "ephemeris.hpp"
-#include "renderer.hpp"
-#include "sim_config.hpp"
+#include "physics/ephemeris.hpp"
+#include "gfx/renderer.hpp"
+#include "cfg/sim_config.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -42,7 +42,7 @@ int main() {
     Camera cam;
 
     // load config
-    SimConfig sim_config = SimConfig::load(DEFAULT_CONFIG_PATH);
+    cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
     // set up bodies
     Ephemeris current(sim_config);

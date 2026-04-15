@@ -1,7 +1,7 @@
 #pragma once
 
-#include "camera.hpp"
-#include "ephemeris.hpp"
+#include "gfx/camera.hpp"
+#include "physics/ephemeris.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
