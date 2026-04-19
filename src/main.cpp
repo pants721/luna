@@ -8,6 +8,7 @@
 #include "cfg/sim_config.hpp"
 
 #include <GLFW/glfw3.h>
+#include <string>
 
 void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     using namespace gfx;
@@ -35,7 +36,7 @@ void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     }
 }
 
-int main() {
+int guiMain() {
     // renderer
     gfx::Renderer renderer;
     renderer.setup();
@@ -58,7 +59,7 @@ int main() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        physics::step(current, next, TIME_STEP);
+        physics::stepBHMT(current, next, TIME_STEP);
 
         // clear screen
         renderer.clear();
@@ -77,4 +78,36 @@ int main() {
     glfwTerminate();
 
     return EXIT_SUCCESS;
+}
+
+int noGuiMain() {
+    // load config
+    cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
+
+    // set up bodies
+    physics::Ephemeris current(sim_config);
+    physics::Ephemeris next(sim_config.num_bodies);
+
+    int steps = 0;
+    int max_steps = 100;
+
+    while (steps < max_steps) {
+        physics::stepBHMT(current, next, TIME_STEP);
+        steps++;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        std::string mode = argv[1];
+
+        if (mode == "gui") {
+            return guiMain();
+        }
+    }
+
+    // no gui mode
+    return noGuiMain();
 }

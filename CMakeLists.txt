@@ -25,6 +25,7 @@ add_executable(luna
         src/cfg/rand_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
+        src/physics/octree.cpp
         src/physics/ephemeris.cpp)
 
 target_link_libraries(luna 
