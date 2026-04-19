@@ -49,13 +49,30 @@ struct Ephemeris {
 };
 
 void reset(Ephemeris &state);
-void computeBounds(Ephemeris &s);
-void computeForces(Ephemeris &state);
-void computeForcesBH(Ephemeris &state);
-void integrate(Ephemeris &current, Ephemeris &next, double dt);
-void finalKick(Ephemeris &current, Ephemeris &next, double dt);
-void step(Ephemeris &current, Ephemeris &next, double dt);
-void stepBH(Ephemeris &current, Ephemeris &next, double dt);
+
+void computeBoundsSingle(Ephemeris &s, size_t b_idx);
+void computeBoundsST(Ephemeris &s);
+void computeBoundsMT(Ephemeris &s);
+
+void computeForcesDirectSingle(Ephemeris &s, size_t b_idx);
+void computeForcesDirectST(Ephemeris &state);
+void computeForcesDirectMT(Ephemeris &state);
+
+void computeForcesBHST(Ephemeris &state);
+void computeForcesBHMT(Ephemeris &state);
+
+void integrateSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx);
+void integrateST(Ephemeris &current, Ephemeris &next, double dt);
+void integrateMT(Ephemeris &current, Ephemeris &next, double dt);
+
+void finalKickSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx);
+void finalKickST(Ephemeris &current, Ephemeris &next, double dt);
+void finalKickMT(Ephemeris &current, Ephemeris &next, double dt);
+
+void stepDirectST(Ephemeris &current, Ephemeris &next, double dt);
+void stepDirectMT(Ephemeris &current, Ephemeris &next, double dt);
+void stepBHST(Ephemeris &current, Ephemeris &next, double dt);
+void stepBHMT(Ephemeris &current, Ephemeris &next, double dt);
 void printState(Ephemeris &state, int step);
 
 }
