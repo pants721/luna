@@ -10,7 +10,7 @@ namespace physics {
 struct Octree {
 
     struct Node {
-        std::array<Node *, 8> children = {nullptr};
+        std::array<int, 8> children;
         int body_idx = -1; 
 
         // top left back
@@ -25,24 +25,25 @@ struct Octree {
 
         inline bool isLeaf() const;
         inline bool isEmpty() const;
-        void divide();
     };
 
-    Node *root;
+    std::vector<Node> nodes;
+    int root_idx;
+
     Ephemeris *eph;
 
     Octree(Ephemeris *eph);
 
-    int getOctant(Node *node, int b_idx);
+    void divide(int node_idx);
+    int allocNode(double x, double y, double z, double width);
+    int getOctant(int node_idx, int b_idx);
     void build();
-    void clear();
-    void clear(Node *node);
     void insert(int b_idx);
-    void insert(Node *node, int b_idx);
+    void insert(int node_idx, int b_idx);
     void computeMass();
-    void computeMass(Node *node);
+    void computeMass(int node_idx);
     void computeNetForce(int b_idx, double theta);
-    void computeNetForce(Node *node, int b_idx, double theta);
+    void computeNetForce(int node_idx, int b_idx, double theta);
     void reset();
 };
 

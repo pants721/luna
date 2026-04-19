@@ -182,8 +182,6 @@ void physics::computeForcesBH(physics::Ephemeris &state) {
 
         tree.computeNetForce(i, BH_THETA);
     }
-
-    tree.clear();
 }
 
 void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
