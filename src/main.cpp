@@ -94,7 +94,6 @@ int noGuiMain() {
     while (steps < max_steps) {
         physics::stepBHMT(current, next, TIME_STEP);
         steps++;
-        // printf("%d\n", steps);
     }
 
     return EXIT_SUCCESS;

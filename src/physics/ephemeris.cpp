@@ -114,38 +114,17 @@ void physics::resetBounds(physics::Ephemeris &s) {
     s.min_z = INFINITY;
 }
 
-void physics::computeBoundsSingle(Ephemeris &s, size_t b_idx) {
-    double x = s.x[b_idx];
-    double y = s.y[b_idx];
-    double z = s.z[b_idx];
-
-    // update maxes
-    if (x > s.max_x) s.max_x = x;
-    if (y > s.max_y) s.max_y = y;
-    if (z > s.max_z) s.max_z = z;
-
-    // update mins
-    if (x < s.min_x) s.min_x = x;
-    if (y < s.min_y) s.min_y = y;
-    if (z < s.min_z) s.min_z = z;
-}
-
-void physics::computeBoundsST(physics::Ephemeris &s) {
+void physics::computeBounds(Ephemeris &s) {
     resetBounds(s);
-    for (size_t i = 0; i < s.n; ++i) {
-        computeBoundsSingle(s, i);
+    #pragma omp simd
+    for (size_t i = 1; i < s.n; ++i) {
+        s.min_x = std::min(s.min_x, s.x[i]); // min x
+        s.max_x = std::max(s.max_x, s.x[i]); // max x
+        s.min_y = std::min(s.min_y, s.y[i]); // min y
+        s.max_y = std::max(s.max_y, s.y[i]); // max y
+        s.min_z = std::min(s.min_z, s.z[i]); // min z
+        s.max_z = std::max(s.max_z, s.z[i]); // max z
     }
-}
-
-void physics::computeBoundsMT(Ephemeris &s) {
-    resetBounds(s);
-    std::vector<size_t> indices(s.n);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), 
-                  [&](size_t i) {
-        computeBoundsSingle(s, i);
-    });
 }
 
 void physics::computeForcesDirectSingle(physics::Ephemeris &s, size_t b_idx) {
@@ -311,7 +290,7 @@ void physics::stepDirectMT(physics::Ephemeris &current, physics::Ephemeris &next
 }
 
 void physics::stepBHST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeBoundsST(current);
+    computeBounds(current);
     computeForcesBHST(current);
     integrateST(current, next, dt);
     computeForcesBHST(next);
@@ -320,7 +299,7 @@ void physics::stepBHST(physics::Ephemeris &current, physics::Ephemeris &next, do
 }
 
 void physics::stepBHMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeBoundsMT(current);
+    computeBounds(current);
     computeForcesBHMT(current);
     integrateMT(current, next, dt);
     computeForcesBHMT(next);

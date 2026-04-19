@@ -5,7 +5,7 @@
 constexpr int MAX_BODIES = 1e6;
 
 constexpr double SOFTENING = 1e-12;
-constexpr double BH_THETA = 1.5;
+constexpr double BH_THETA = 1.0;
 // TODO: probably make this a part of Ephemeris so that we can like pause and speed up
 constexpr double TIME_STEP = 0.01;
 
