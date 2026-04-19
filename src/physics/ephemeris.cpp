@@ -104,6 +104,16 @@ physics::Ephemeris::Ephemeris(cfg::SimConfig config) : physics::Ephemeris(config
     }
 }
 
+void physics::resetBounds(physics::Ephemeris &s) {
+    s.max_x = -INFINITY;
+    s.max_y = -INFINITY;
+    s.max_z = -INFINITY;
+
+    s.min_x = INFINITY;
+    s.min_y = INFINITY;
+    s.min_z = INFINITY;
+}
+
 void physics::computeBoundsSingle(Ephemeris &s, size_t b_idx) {
     double x = s.x[b_idx];
     double y = s.y[b_idx];
@@ -121,12 +131,14 @@ void physics::computeBoundsSingle(Ephemeris &s, size_t b_idx) {
 }
 
 void physics::computeBoundsST(physics::Ephemeris &s) {
+    resetBounds(s);
     for (size_t i = 0; i < s.n; ++i) {
         computeBoundsSingle(s, i);
     }
 }
 
 void physics::computeBoundsMT(Ephemeris &s) {
+    resetBounds(s);
     std::vector<size_t> indices(s.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -197,6 +209,7 @@ void physics::computeForcesBHST(Ephemeris &s) {
     tree.build();
     tree.computeMass();
 
+    #pragma omp parallel for schedule(dynamic, 64)
     for (size_t i = 0; i < s.n; ++i) {
         s.ax[i] = 0;
         s.ay[i] = 0;
@@ -247,7 +260,7 @@ void physics::integrateSingle(Ephemeris &current, Ephemeris &next, double dt, si
 }
 
 void physics::integrateST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    for (size_t i; i < current.n; ++i) {
+    for (size_t i = 0; i < current.n; ++i) {
         integrateSingle(current, next, dt, i);
     }
 }

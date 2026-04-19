@@ -50,6 +50,7 @@ struct Ephemeris {
 
 void reset(Ephemeris &state);
 
+void resetBounds(Ephemeris &s);
 void computeBoundsSingle(Ephemeris &s, size_t b_idx);
 void computeBoundsST(Ephemeris &s);
 void computeBoundsMT(Ephemeris &s);
