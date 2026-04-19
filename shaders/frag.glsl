@@ -3,7 +3,7 @@
 
 out vec4 FragColor;
 
-const vec3 starColor = vec3(1.0, 1.0, 1.0);
+const vec3 starColor = vec3(1.0, 0.0, 0.0);
 
 void main()
 {
@@ -24,5 +24,5 @@ void main()
     //
     // FragColor = vec4(starColor * alpha, alpha);
 
-    FragColor = vec4(starColor, 1.0);
+    FragColor = vec4(starColor, 1.0 - smoothstep(0.1, 1.0, r));
 }

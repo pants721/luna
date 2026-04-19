@@ -58,7 +58,7 @@ int main() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        physics::step(current, next, TIME_STEP);
+        physics::stepBH(current, next, TIME_STEP);
 
         // clear screen
         renderer.clear();

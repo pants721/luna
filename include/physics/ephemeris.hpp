@@ -2,6 +2,7 @@
 
 #include "cfg/sim_config.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -22,6 +23,14 @@ struct Ephemeris {
     // acceleration
     std::vector<double> ax, ay, az;
 
+    double min_x = INFINITY; 
+    double min_y = INFINITY; 
+    double min_z = INFINITY;
+
+    double max_x = -INFINITY;
+    double max_y = -INFINITY;
+    double max_z = -INFINITY;
+
     Ephemeris(size_t n) : n(n), mass(n), 
         x(n), y(n), z(n), 
         vx(n), vy(n), vz(n),
@@ -40,10 +49,13 @@ struct Ephemeris {
 };
 
 void reset(Ephemeris &state);
+void computeBounds(Ephemeris &s);
 void computeForces(Ephemeris &state);
+void computeForcesBH(Ephemeris &state);
 void integrate(Ephemeris &current, Ephemeris &next, double dt);
 void finalKick(Ephemeris &current, Ephemeris &next, double dt);
 void step(Ephemeris &current, Ephemeris &next, double dt);
+void stepBH(Ephemeris &current, Ephemeris &next, double dt);
 void printState(Ephemeris &state, int step);
 
 }

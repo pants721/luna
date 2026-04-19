@@ -1,6 +1,7 @@
 #include "physics/ephemeris.hpp"
 #include "constants.hpp"
 #include "cfg/sim_config.hpp"
+#include "octree.hpp"
 
 #include <algorithm>
 #include <execution>
@@ -103,6 +104,24 @@ physics::Ephemeris::Ephemeris(cfg::SimConfig config) : physics::Ephemeris(config
     }
 }
 
+void physics::computeBounds(physics::Ephemeris &s) {
+    for (int i = 0; i < s.n; ++i) {
+        double x = s.x[i];
+        double y = s.y[i];
+        double z = s.z[i];
+
+        // update maxes
+        if (x > s.max_x) s.max_x = x;
+        if (y > s.max_y) s.max_y = y;
+        if (z > s.max_z) s.max_z = z;
+
+        // update mins
+        if (x < s.min_x) s.min_x = x;
+        if (y < s.min_y) s.min_y = y;
+        if (z < s.min_z) s.min_z = z;
+    }
+}
+
 void physics::computeForces(physics::Ephemeris &s) {
     // Create a vector of indices to parallelize over
     std::vector<size_t> indices(s.n);
@@ -150,6 +169,23 @@ void physics::computeForces(physics::Ephemeris &s) {
     });
 }
 
+void physics::computeForcesBH(physics::Ephemeris &state) {
+    physics::Octree tree(&state);
+    tree.build();
+    tree.computeMass();
+
+    // compute accel
+    for (int i = 0; i < state.n; ++i) {
+        state.ax[i] = 0;
+        state.ay[i] = 0;
+        state.az[i] = 0;
+
+        tree.computeNetForce(i, BH_THETA);
+    }
+
+    tree.clear();
+}
+
 void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
@@ -192,6 +228,15 @@ void physics::step(physics::Ephemeris &current, physics::Ephemeris &next, double
     computeForces(current);
     integrate(current, next, dt);
     computeForces(next);
+    finalKick(current, next, dt);
+    std::swap(current, next);
+}
+
+void physics::stepBH(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+    computeBounds(current);
+    computeForcesBH(current);
+    integrate(current, next, dt);
+    computeForcesBH(next);
     finalKick(current, next, dt);
     std::swap(current, next);
 }
