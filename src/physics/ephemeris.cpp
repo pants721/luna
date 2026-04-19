@@ -105,21 +105,28 @@ physics::Ephemeris::Ephemeris(cfg::SimConfig config) : physics::Ephemeris(config
 }
 
 void physics::computeBounds(physics::Ephemeris &s) {
-    for (int i = 0; i < s.n; ++i) {
-        double x = s.x[i];
-        double y = s.y[i];
-        double z = s.z[i];
+    std::vector<size_t> indices(s.n);
+    std::iota(indices.begin(), indices.end(), 0);
 
-        // update maxes
-        if (x > s.max_x) s.max_x = x;
-        if (y > s.max_y) s.max_y = y;
-        if (z > s.max_z) s.max_z = z;
+    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), 
+                  [&](size_t i) {
+        #pragma omp simcurrentd
+        for (int i = 0; i < s.n; ++i) {
+            double x = s.x[i];
+            double y = s.y[i];
+            double z = s.z[i];
 
-        // update mins
-        if (x < s.min_x) s.min_x = x;
-        if (y < s.min_y) s.min_y = y;
-        if (z < s.min_z) s.min_z = z;
-    }
+            // update maxes
+            if (x > s.max_x) s.max_x = x;
+            if (y > s.max_y) s.max_y = y;
+            if (z > s.max_z) s.max_z = z;
+
+            // update mins
+            if (x < s.min_x) s.min_x = x;
+            if (y < s.min_y) s.min_y = y;
+            if (z < s.min_z) s.min_z = z;
+        }
+    });
 }
 
 void physics::computeForces(physics::Ephemeris &s) {
@@ -169,19 +176,25 @@ void physics::computeForces(physics::Ephemeris &s) {
     });
 }
 
-void physics::computeForcesBH(physics::Ephemeris &state) {
-    physics::Octree tree(&state);
+void physics::computeForcesBH(physics::Ephemeris &s) {
+    physics::Octree tree(&s);
     tree.build();
     tree.computeMass();
 
-    // compute accel
-    for (int i = 0; i < state.n; ++i) {
-        state.ax[i] = 0;
-        state.ay[i] = 0;
-        state.az[i] = 0;
+    // std::vector<size_t> indices(s.n);
+    // std::iota(indices.begin(), indices.end(), 0);
+    //
+    // // compute accel
+    // std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
+        #pragma omp simd
+        for (int i = 0; i < s.n; ++i) {
+            s.ax[i] = 0;
+            s.ay[i] = 0;
+            s.az[i] = 0;
 
-        tree.computeNetForce(i, BH_THETA);
-    }
+            tree.computeNetForce(i, BH_THETA);
+        }
+    // });
 }
 
 void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {

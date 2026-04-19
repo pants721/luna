@@ -7,8 +7,7 @@
 physics::Octree::Node::Node(double x, double y, double z, double w) 
     : x(x), y(y), z(z), 
     width(w),
-    body_idx(-1),
-    center_x(x + width / 2), center_y(y + width / 2), center_z(z + width / 2) {
+    body_idx(-1) {
     for (int i = 0; i < children.size(); i++) {
         children[i] = -1;
     }
@@ -57,9 +56,9 @@ int physics::Octree::getOctant(int node_idx, int b_idx) {
     Node &node = nodes[node_idx];
     int octant = 0b000;
 
-    if (eph->x[b_idx] >= node.center_x) octant |= 0b001;
-    if (eph->y[b_idx] >= node.center_y) octant |= 0b010;
-    if (eph->z[b_idx] >= node.center_z) octant |= 0b100;
+    if (eph->x[b_idx] >= node.x + node.width / 2) octant |= 0b001;
+    if (eph->y[b_idx] >= node.y + node.width / 2) octant |= 0b010;
+    if (eph->z[b_idx] >= node.z + node.width / 2) octant |= 0b100;
 
     return octant;
 }

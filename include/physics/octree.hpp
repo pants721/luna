@@ -10,16 +10,13 @@ namespace physics {
 struct Octree {
 
     struct Node {
-        std::array<int, 8> children;
-        int body_idx = -1; 
-
         // top left back
-        double x, y, z;
-        double width;
-        double center_x, center_y, center_z;
-
+        double x, y, z, width;
         double total_mass;
         double com_x, com_y, com_z;
+
+        std::array<int, 8> children;
+        int body_idx = -1; 
 
         Node(double x, double y, double z, double w);
 
