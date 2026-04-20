@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include <omp.h>
+
 physics::Ephemeris::Ephemeris(size_t n, std::pair<double, double> mass_range,
                    std::pair<double, double> pos_range) : physics::Ephemeris(n) {
     std::random_device rd;
@@ -115,11 +117,9 @@ void physics::computeBounds(Ephemeris &s) {
     double min_y = std::numeric_limits<double>::infinity();
     double min_z = std::numeric_limits<double>::infinity();
 
-#ifdef ENABLE_OMP
     #pragma omp parallel for \
         reduction(max:max_x,max_y,max_z) \
         reduction(min:min_x,min_y,min_z)
-#endif
     for (size_t i = 0; i < s.n; ++i) {
         double x = s.x[i];
         double y = s.y[i];
@@ -144,9 +144,7 @@ void physics::computeBounds(Ephemeris &s) {
 }
 
 void physics::computeAccelDirect(Ephemeris &s) {
-#ifdef ENABLE_OMP
-    #pragma omp parallel for schedule(static)
-#endif
+    #pragma omp parallel for schedule(guided)
     for (size_t i = 0; i < s.n; ++i) {
         double ax = 0.0;
         double ay = 0.0;
@@ -156,11 +154,9 @@ void physics::computeAccelDirect(Ephemeris &s) {
         double yi = s.y[i];
         double zi = s.z[i];
 
-#ifdef ENABLE_OMP
         // allow parallel work to compute a delta for acceleration independently 
         // and combine
         #pragma omp simd reduction(+:ax,ay,az)
-#endif
         for (size_t j = 0; j < s.n; ++j) {
             double xj = s.x[j], yj = s.y[j], zj = s.z[j];
             double mj = s.mass[j];
@@ -201,18 +197,14 @@ void physics::computeAccelBH(Ephemeris &s) {
     std::fill(s.ay.begin(), s.ay.end(), 0.0);
     std::fill(s.az.begin(), s.az.end(), 0.0);
 
-#ifdef ENABLE_OMP
-    #pragma omp parallel for schedule(static)
-#endif
+    #pragma omp parallel for schedule(guided)
     for (size_t i = 0; i < s.n; ++i) {
         tree.computeAccelIt(i, BH_THETA);
     }
 }
 
 void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-#ifdef ENABLE_OMP
-    #pragma omp parallel for schedule(static)
-#endif
+    #pragma omp parallel for schedule(guided)
     for (size_t i = 0; i < current.n; ++i) {
         // kick
         // v(t + dt/2) (half-step velocity)
@@ -230,9 +222,7 @@ void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, d
 }
 
 void physics::halfKick(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-#ifdef ENABLE_OMP
-    #pragma omp parallel for schedule(static)
-#endif
+    #pragma omp parallel for schedule(guided)
     for (size_t i = 0; i < current.n; ++i) {
         next.vx[i] += 0.5 * next.ax[i] * dt;
         next.vy[i] += 0.5 * next.ay[i] * dt;

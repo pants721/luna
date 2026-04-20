@@ -8,9 +8,10 @@
 #include "cfg/sim_config.hpp"
 
 #include <GLFW/glfw3.h>
+#include <iostream>
 #include <string>
-
-#define ENABLE_OMP
+#include <omp.h>
+#include <thread>
 
 void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     using namespace gfx;
