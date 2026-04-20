@@ -23,13 +23,13 @@ struct Ephemeris {
     // acceleration
     std::vector<double> ax, ay, az;
 
-    double min_x = INFINITY; 
-    double min_y = INFINITY; 
-    double min_z = INFINITY;
+    double max_x = -std::numeric_limits<double>::infinity();
+    double max_y = -std::numeric_limits<double>::infinity();
+    double max_z = -std::numeric_limits<double>::infinity();
 
-    double max_x = -INFINITY;
-    double max_y = -INFINITY;
-    double max_z = -INFINITY;
+    double min_x = std::numeric_limits<double>::infinity();
+    double min_y = std::numeric_limits<double>::infinity();
+    double min_z = std::numeric_limits<double>::infinity();
 
     Ephemeris(size_t n) : n(n), mass(n), 
         x(n), y(n), z(n), 
@@ -50,7 +50,6 @@ struct Ephemeris {
 
 void reset(Ephemeris &state);
 
-void resetBounds(Ephemeris &s);
 void computeBounds(Ephemeris &s);
 
 void computeForcesDirectSingle(Ephemeris &s, size_t b_idx);

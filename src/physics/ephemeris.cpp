@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <execution>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <random>
 #include <cmath>
@@ -104,27 +105,41 @@ physics::Ephemeris::Ephemeris(cfg::SimConfig config) : physics::Ephemeris(config
     }
 }
 
-void physics::resetBounds(physics::Ephemeris &s) {
-    s.max_x = -INFINITY;
-    s.max_y = -INFINITY;
-    s.max_z = -INFINITY;
-
-    s.min_x = INFINITY;
-    s.min_y = INFINITY;
-    s.min_z = INFINITY;
-}
-
 void physics::computeBounds(Ephemeris &s) {
-    resetBounds(s);
-    #pragma omp simd
-    for (size_t i = 1; i < s.n; ++i) {
-        s.min_x = std::min(s.min_x, s.x[i]); // min x
-        s.max_x = std::max(s.max_x, s.x[i]); // max x
-        s.min_y = std::min(s.min_y, s.y[i]); // min y
-        s.max_y = std::max(s.max_y, s.y[i]); // max y
-        s.min_z = std::min(s.min_z, s.z[i]); // min z
-        s.max_z = std::max(s.max_z, s.z[i]); // max z
+    double max_x = -std::numeric_limits<double>::infinity();
+    double max_y = -std::numeric_limits<double>::infinity();
+    double max_z = -std::numeric_limits<double>::infinity();
+
+    double min_x = std::numeric_limits<double>::infinity();
+    double min_y = std::numeric_limits<double>::infinity();
+    double min_z = std::numeric_limits<double>::infinity();
+
+#ifdef ENABLE_OMP
+    #pragma omp parallel for \
+        reduction(max:max_x,max_y,max_z) \
+        reduction(min:min_x,min_y,min_z)
+#endif
+    for (size_t i = 0; i < s.n; ++i) {
+        double x = s.x[i];
+        double y = s.y[i];
+        double z = s.z[i];
+
+        max_x = std::max(max_x, x); // max x
+        max_y = std::max(max_y, y); // max y
+        max_z = std::max(max_z, z); // max z
+
+        min_x = std::min(min_x, x); // min x
+        min_y = std::min(min_y, y); // min y
+        min_z = std::min(min_z, z); // min z
     }
+
+    s.max_x = max_x;
+    s.max_y = max_y;
+    s.max_z = max_z;
+
+    s.min_x = min_x;
+    s.min_y = min_y;
+    s.min_z = min_z;
 }
 
 void physics::computeForcesDirect(Ephemeris &s) {
