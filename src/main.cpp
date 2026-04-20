@@ -61,7 +61,7 @@ int guiMain() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        physics::stepBHMT(current, next, TIME_STEP);
+        physics::stepBH(current, next, TIME_STEP);
 
         // clear screen
         renderer.clear();
@@ -94,7 +94,7 @@ int noGuiMain() {
     int max_steps = 100;
 
     while (steps < max_steps) {
-        physics::stepBHMT(current, next, TIME_STEP);
+        physics::stepBH(current, next, TIME_STEP);
         steps++;
     }
 
