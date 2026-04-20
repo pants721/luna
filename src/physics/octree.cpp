@@ -3,6 +3,8 @@
 #include "ephemeris.hpp"
 #include <algorithm>
 #include <cmath>
+#include <oneapi/tbb/partitioner.h>
+#include <stack>
 
 physics::Octree::Node::Node(double x, double y, double z, double w) 
     : x(x), y(y), z(z), 
@@ -165,11 +167,11 @@ void physics::Octree::computeMass(int node_idx) {
     }
 }
 
-void physics::Octree::computeNetForce(int b_idx, double theta) {
-    computeNetForce(root_idx, b_idx, theta);
+void physics::Octree::computeAccel(int b_idx, double theta) {
+    computeAccel(root_idx, b_idx, theta);
 }
 
-void physics::Octree::computeNetForce(int node_idx, int b_idx, double theta) {
+void physics::Octree::computeAccel(int node_idx, int b_idx, double theta) {
     double jx, jy, jz;
     Node &node = nodes[node_idx];
 
@@ -204,7 +206,56 @@ void physics::Octree::computeNetForce(int node_idx, int b_idx, double theta) {
         for (int i = 0; i < 8; ++i) {
             int child_idx = node.children[i];
             if (child_idx != -1) {
-                computeNetForce(child_idx, b_idx, theta);
+                computeAccel(child_idx, b_idx, theta);
+            }
+        }
+    }
+}
+
+void physics::Octree::computeAccelIt(int b_idx, double theta) {
+    std::stack<int> node_stack;
+    node_stack.push(root_idx);
+
+    while (!node_stack.empty()) {
+        // get node to process
+        int node_idx = node_stack.top();
+        node_stack.pop();
+        Node &node = nodes[node_idx];
+        
+        double jx, jy, jz;
+        if (node.isLeaf()) {
+            if (node.body_idx == -1 || node.body_idx == b_idx) return;
+            jx = eph->x[node.body_idx];
+            jy = eph->y[node.body_idx];
+            jz = eph->z[node.body_idx];
+        } else {
+            jx = node.com_x;
+            jy = node.com_y;
+            jz = node.com_z;
+        }
+
+        double dx = jx - eph->x[b_idx];
+        double dy = jy - eph->y[b_idx];
+        double dz = jz - eph->z[b_idx];
+
+        double dist_sq = dx * dx + dy * dy + dz * dz + SOFTENING;
+        double curr_theta = node.width / sqrt(dist_sq);
+
+        // node is far enough
+        if (curr_theta <= theta || node.isLeaf()) {
+            double inv_dist = 1.0 / sqrt(dist_sq);
+            double inv_dist_cub = inv_dist * inv_dist * inv_dist;
+            double common_factor = G * node.total_mass * inv_dist_cub;
+
+            eph->ax[b_idx] += dx * common_factor;
+            eph->ay[b_idx] += dy * common_factor;
+            eph->az[b_idx] += dz * common_factor;
+        } else { // node is too close
+            for (int i = 0; i < 8; ++i) {
+                int child_idx = node.children[i];
+                if (child_idx != -1) {
+                    node_stack.push(child_idx);
+                }
             }
         }
     }

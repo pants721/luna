@@ -39,8 +39,9 @@ struct Octree {
     void insert(int node_idx, int b_idx);
     void computeMass();
     void computeMass(int node_idx);
-    void computeNetForce(int b_idx, double theta);
-    void computeNetForce(int node_idx, int b_idx, double theta);
+    void computeAccel(int b_idx, double theta);
+    void computeAccel(int node_idx, int b_idx, double theta);
+    void computeAccelIt(int b_idx, double theta);
     void reset();
 };
 

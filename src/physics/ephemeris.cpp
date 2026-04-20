@@ -201,7 +201,7 @@ void physics::computeForcesBH(Ephemeris &s) {
         s.ay[i] = 0;
         s.az[i] = 0;
 
-        tree.computeNetForce(i, BH_THETA);
+        tree.computeAccel(i, BH_THETA);
     }
 }
 
@@ -219,7 +219,7 @@ void computeForcesBHMT(physics::Ephemeris &s) {
         s.ay[i] = 0;
         s.az[i] = 0;
 
-        tree.computeNetForce(i, BH_THETA);
+        tree.computeAccel(i, BH_THETA);
     });
 }
 
