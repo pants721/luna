@@ -6,6 +6,7 @@
 #include "physics/ephemeris.hpp"
 #include "gfx/renderer.hpp"
 #include "cfg/sim_config.hpp"
+#include "sim/step.hpp"
 
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -62,7 +63,7 @@ int guiMain() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        physics::stepBH(current, next, TIME_STEP);
+        sim::step<sim::force_policy::BarnesHut>(current, next, TIME_STEP);
 
         // clear screen
         renderer.clear();
@@ -95,7 +96,7 @@ int noGuiMain() {
     int max_steps = 100;
 
     while (steps < max_steps) {
-        physics::stepBH(current, next, TIME_STEP);
+        sim::step<sim::force_policy::BarnesHut>(current, next, TIME_STEP);
         steps++;
     }
 

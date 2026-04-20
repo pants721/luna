@@ -18,6 +18,7 @@ find_package(OpenMP REQUIRED)
 include_directories(include)
 include_directories(include/gfx)
 include_directories(include/physics)
+include_directories(include/sim)
 include_directories(include/cfg)
 
 add_executable(luna
@@ -26,6 +27,7 @@ add_executable(luna
         src/cfg/rand_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
+        src/sim/step.cpp
         src/physics/octree.cpp
         src/physics/ephemeris.cpp)
 

@@ -2,7 +2,6 @@
 
 #include "ephemeris.hpp"
 #include <array>
-#include <cstddef>
 #include <vector>
 
 namespace physics {
@@ -37,6 +36,7 @@ struct Octree {
     void build();
     void insert(int b_idx);
     void insert(int node_idx, int b_idx);
+    // TODO: divide into bh.hpp or smthn
     void computeMass();
     void computeMass(int node_idx);
     void computeAccel(int b_idx, double theta);

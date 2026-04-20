@@ -48,20 +48,6 @@ struct Ephemeris {
     Ephemeris(cfg::SimConfig config);
 };
 
-void reset(Ephemeris &state);
-
-void computeBounds(Ephemeris &s);
-
-void computeAccelDirect(Ephemeris &state);
-
-void computeAccelBH(Ephemeris &state);
-
-void integrate(Ephemeris &current, Ephemeris &next, double dt);
-
-void halfKick(Ephemeris &current, Ephemeris &next, double dt);
-
-void stepDirect(Ephemeris &current, Ephemeris &next, double dt);
-void stepBH(Ephemeris &current, Ephemeris &next, double dt);
 void printState(Ephemeris &state, int step);
 
 }
