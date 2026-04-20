@@ -13,6 +13,7 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(TBB REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
+find_package(OpenMP REQUIRED)
 
 include_directories(include)
 include_directories(include/gfx)
@@ -39,6 +40,9 @@ target_link_libraries(luna
     glm::glm
     reflectcpp::reflectcpp
 )
+
+target_link_libraries(luna PUBLIC OpenMP::OpenMP_CXX)
+
 target_link_libraries(luna PRIVATE TBB::tbb)
 
 target_compile_options(luna PRIVATE -ltbb)
