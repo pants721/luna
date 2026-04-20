@@ -213,8 +213,13 @@ void physics::Octree::computeAccel(int node_idx, int b_idx, double theta) {
 }
 
 void physics::Octree::computeAccelIt(int b_idx, double theta) {
+    // TODO: replace with native array
     std::stack<int> node_stack;
     node_stack.push(root_idx);
+
+    double delta_ax = 0.0;
+    double delta_ay = 0.0;
+    double delta_az = 0.0;
 
     while (!node_stack.empty()) {
         // get node to process
@@ -224,7 +229,7 @@ void physics::Octree::computeAccelIt(int b_idx, double theta) {
         
         double jx, jy, jz;
         if (node.isLeaf()) {
-            if (node.body_idx == -1 || node.body_idx == b_idx) return;
+            if (node.body_idx == -1 || node.body_idx == b_idx) continue;
             jx = eph->x[node.body_idx];
             jy = eph->y[node.body_idx];
             jz = eph->z[node.body_idx];
@@ -239,17 +244,18 @@ void physics::Octree::computeAccelIt(int b_idx, double theta) {
         double dz = jz - eph->z[b_idx];
 
         double dist_sq = dx * dx + dy * dy + dz * dz + SOFTENING;
-        double curr_theta = node.width / sqrt(dist_sq);
+        double dist = std::sqrt(dist_sq);
+        double curr_theta = node.width / dist;
 
         // node is far enough
         if (curr_theta <= theta || node.isLeaf()) {
-            double inv_dist = 1.0 / sqrt(dist_sq);
+            double inv_dist = 1.0 / dist;
             double inv_dist_cub = inv_dist * inv_dist * inv_dist;
             double common_factor = G * node.total_mass * inv_dist_cub;
 
-            eph->ax[b_idx] += dx * common_factor;
-            eph->ay[b_idx] += dy * common_factor;
-            eph->az[b_idx] += dz * common_factor;
+            delta_ax += dx * common_factor;
+            delta_ay += dy * common_factor;
+            delta_az += dz * common_factor;
         } else { // node is too close
             for (int i = 0; i < 8; ++i) {
                 int child_idx = node.children[i];
@@ -259,4 +265,8 @@ void physics::Octree::computeAccelIt(int b_idx, double theta) {
             }
         }
     }
+
+    eph->ax[b_idx] += delta_ax;
+    eph->ay[b_idx] += delta_ay;
+    eph->az[b_idx] += delta_az;
 }

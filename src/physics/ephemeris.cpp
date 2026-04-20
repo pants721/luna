@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <execution>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <numeric>
 #include <random>
@@ -195,32 +196,17 @@ void physics::computeForcesBH(Ephemeris &s) {
     tree.build();
     tree.computeMass();
 
+    // reset accels
+    std::fill(s.ax.begin(), s.ax.end(), 0.0);
+    std::fill(s.ay.begin(), s.ay.end(), 0.0);
+    std::fill(s.az.begin(), s.az.end(), 0.0);
+
+#ifdef ENABLE_OMP
     #pragma omp parallel for schedule(dynamic, 64)
+#endif
     for (size_t i = 0; i < s.n; ++i) {
-        s.ax[i] = 0;
-        s.ay[i] = 0;
-        s.az[i] = 0;
-
-        tree.computeAccel(i, BH_THETA);
+        tree.computeAccelIt(i, BH_THETA);
     }
-}
-
-void computeForcesBHMT(physics::Ephemeris &s) {
-    physics::Octree tree(&s);
-    tree.build();
-    tree.computeMass();
-
-    std::vector<size_t> indices(s.n);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    // compute accel
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
-        s.ax[i] = 0;
-        s.ay[i] = 0;
-        s.az[i] = 0;
-
-        tree.computeAccel(i, BH_THETA);
-    });
 }
 
 void physics::integrateSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx) {
