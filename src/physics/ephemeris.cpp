@@ -143,7 +143,7 @@ void physics::computeBounds(Ephemeris &s) {
     s.min_z = min_z;
 }
 
-void physics::computeForcesDirect(Ephemeris &s) {
+void physics::computeAccelDirect(Ephemeris &s) {
 #ifdef ENABLE_OMP
     #pragma omp parallel for schedule(static)
 #endif
@@ -191,7 +191,7 @@ void physics::computeForcesDirect(Ephemeris &s) {
     }
 }
 
-void physics::computeForcesBH(Ephemeris &s) {
+void physics::computeAccelBH(Ephemeris &s) {
     physics::Octree tree(&s);
     tree.build();
     tree.computeMass();
@@ -267,35 +267,35 @@ void finalKickMT(physics::Ephemeris &current, physics::Ephemeris &next, double d
 }
 
 void physics::stepDirect(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeForcesDirect(current);
+    computeAccelDirect(current);
     integrate(current, next, dt);
-    computeForcesDirect(next);
+    computeAccelDirect(next);
     finalKick(current, next, dt);
     std::swap(current, next);
 }
 
 void stepDirectMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeForcesDirect(current);
+    computeAccelDirect(current);
     integrateMT(current, next, dt);
-    computeForcesDirect(next);
+    computeAccelDirect(next);
     finalKickMT(current, next, dt);
     std::swap(current, next);
 }
 
 void physics::stepBH(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeBounds(current);
-    computeForcesBH(current);
+    computeAccelBH(current);
     integrate(current, next, dt);
-    computeForcesBH(next);
+    computeAccelBH(next);
     finalKick(current, next, dt);
     std::swap(current, next);
 }
 
 void stepBHMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeBounds(current);
-    computeForcesBHMT(current);
+    computeAccelBH(current);
     integrateMT(current, next, dt);
-    computeForcesBHMT(next);
+    computeAccelBH(next);
     finalKickMT(current, next, dt);
     std::swap(current, next);
 }

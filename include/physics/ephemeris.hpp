@@ -52,10 +52,9 @@ void reset(Ephemeris &state);
 
 void computeBounds(Ephemeris &s);
 
-void computeForcesDirectSingle(Ephemeris &s, size_t b_idx);
-void computeForcesDirect(Ephemeris &state);
+void computeAccelDirect(Ephemeris &state);
 
-void computeForcesBH(Ephemeris &state);
+void computeAccelBH(Ephemeris &state);
 
 void integrateSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx);
 void integrate(Ephemeris &current, Ephemeris &next, double dt);
