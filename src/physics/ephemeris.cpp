@@ -127,63 +127,55 @@ void physics::computeBounds(Ephemeris &s) {
     }
 }
 
-void physics::computeForcesDirectSingle(physics::Ephemeris &s, size_t b_idx) {
-    float ax = 0, ay = 0, az = 0;
-    float xi = (float)s.x[b_idx], yi = (float)s.y[b_idx], zi = (float)s.z[b_idx];
-    float mi = (float)s.mass[b_idx];
-
-    #pragma omp simd
-    for (size_t j = 0; j < s.n; ++j) {
-        if (b_idx == j) continue;
-        float xj = (float)s.x[j], yj = (float)s.y[j], zj = (float)s.z[j];
-        float mj = (float)s.mass[j];
-
-        float dx = xj - xi;
-        float dy = yj - yi;
-        float dz = zj - zi;
-
-        float dist_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
-
-        // hardware approximation of 1/sqrt(dist_sq)
-        __m128 reg_dist_sq = _mm_set_ss(dist_sq);
-        __m128 reg_rsqrt = _mm_rsqrt_ss(reg_dist_sq);
-        float r_inv = _mm_cvtss_f32(reg_rsqrt);
-
-        // Newton-Raphson Refinement
-        // doubles the precision of the approximation
-        r_inv = r_inv * (1.5f - 0.5f * dist_sq * r_inv * r_inv);
-
-        float r_inv_sq = r_inv * r_inv;
-        float r_inv_cub = r_inv_sq * r_inv;
-
-        float common = (float)G * mj * r_inv_cub;
-        ax += dx * common;
-        ay += dy * common;
-        az += dz * common;
-    }
-
-    s.ax[b_idx] = (double)ax;
-    s.ay[b_idx] = (double)ay;
-    s.az[b_idx] = (double)az;
-}
-
-void physics::computeForcesDirectST(Ephemeris &s) {
+void physics::computeForcesDirect(Ephemeris &s) {
+#ifdef ENABLE_OMP
+    #pragma omp parallel for schedule(static)
+#endif
     for (size_t i = 0; i < s.n; ++i) {
-        computeForcesDirectSingle(s, i);
+        double ax = 0.0;
+        double ay = 0.0;
+        double az = 0.0;
+
+        double xi = s.x[i];
+        double yi = s.y[i];
+        double zi = s.z[i];
+
+#ifdef ENABLE_OMP
+        // allow parallel work to compute a delta for acceleration independently 
+        // and combine
+        #pragma omp simd reduction(+:ax,ay,az)
+#endif
+        for (size_t j = 0; j < s.n; ++j) {
+            double xj = s.x[j], yj = s.y[j], zj = s.z[j];
+            double mj = s.mass[j];
+
+            double dx = xj - xi;
+            double dy = yj - yi;
+            double dz = zj - zi;
+
+            double dist_sq = (dx * dx + dy * dy + dz * dz) + SOFTENING;
+
+            double r_inv = 1.0 / std::sqrt(dist_sq);
+
+            double r_inv_sq = r_inv * r_inv;
+            double r_inv_cub = r_inv_sq * r_inv;
+
+            // no early return bcs vectorization
+            if (i != j) {
+                double common = G * mj * r_inv_cub;
+                ax += dx * common;
+                ay += dy * common;
+                az += dz * common;
+            }
+        }
+
+        s.ax[i] = ax;
+        s.ay[i] = ay;
+        s.az[i] = az;
     }
 }
 
-void physics::computeForcesDirectMT(physics::Ephemeris &s) {
-    // // Create a vector of indices to parallelize over
-    std::vector<size_t> indices(s.n);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
-        computeForcesDirectSingle(s, i);
-    });
-}
-
-void physics::computeForcesBHST(Ephemeris &s) {
+void physics::computeForcesBH(Ephemeris &s) {
     physics::Octree tree(&s);
     tree.build();
     tree.computeMass();
@@ -198,7 +190,7 @@ void physics::computeForcesBHST(Ephemeris &s) {
     }
 }
 
-void physics::computeForcesBHMT(physics::Ephemeris &s) {
+void computeForcesBHMT(physics::Ephemeris &s) {
     physics::Octree tree(&s);
     tree.build();
     tree.computeMass();
@@ -238,13 +230,13 @@ void physics::integrateSingle(Ephemeris &current, Ephemeris &next, double dt, si
     if (std::isnan(next.x[b_idx])) std::cout << "EXPLOSION!" << '\n';
 }
 
-void physics::integrateST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     for (size_t i = 0; i < current.n; ++i) {
         integrateSingle(current, next, dt, i);
     }
 }
 
-void physics::integrateMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void integrateMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -259,12 +251,12 @@ void physics::finalKickSingle(physics::Ephemeris &current, physics::Ephemeris &n
     next.vz[b_idx] += 0.5 * next.az[b_idx] * dt;
 }
 
-void physics::finalKickST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void physics::finalKick(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     for (size_t i = 0; i < current.n; ++i) {
         finalKickSingle(current, next, dt, i);
     }
 }
-void physics::finalKickMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void finalKickMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     std::vector<size_t> indices(current.n);
     std::iota(indices.begin(), indices.end(), 0);
 
@@ -273,32 +265,32 @@ void physics::finalKickMT(physics::Ephemeris &current, physics::Ephemeris &next,
     });
 }
 
-void physics::stepDirectST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeForcesDirectST(current);
-    integrateST(current, next, dt);
-    computeForcesDirectST(next);
-    finalKickST(current, next, dt);
+void physics::stepDirect(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+    computeForcesDirect(current);
+    integrate(current, next, dt);
+    computeForcesDirect(next);
+    finalKick(current, next, dt);
     std::swap(current, next);
 }
 
-void physics::stepDirectMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeForcesDirectMT(current);
+void stepDirectMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+    computeForcesDirect(current);
     integrateMT(current, next, dt);
-    computeForcesDirectMT(next);
+    computeForcesDirect(next);
     finalKickMT(current, next, dt);
     std::swap(current, next);
 }
 
-void physics::stepBHST(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void physics::stepBH(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeBounds(current);
-    computeForcesBHST(current);
-    integrateST(current, next, dt);
-    computeForcesBHST(next);
-    finalKickST(current, next, dt);
+    computeForcesBH(current);
+    integrate(current, next, dt);
+    computeForcesBH(next);
+    finalKick(current, next, dt);
     std::swap(current, next);
 }
 
-void physics::stepBHMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void stepBHMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeBounds(current);
     computeForcesBHMT(current);
     integrateMT(current, next, dt);

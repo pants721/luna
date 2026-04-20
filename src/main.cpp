@@ -10,6 +10,8 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+#define ENABLE_OMP
+
 void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     using namespace gfx;
     float move_velocity = cam.config.move_speed * delta_time;
