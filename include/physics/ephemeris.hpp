@@ -56,11 +56,9 @@ void computeAccelDirect(Ephemeris &state);
 
 void computeAccelBH(Ephemeris &state);
 
-void integrateSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx);
 void integrate(Ephemeris &current, Ephemeris &next, double dt);
 
-void finalKickSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx);
-void finalKick(Ephemeris &current, Ephemeris &next, double dt);
+void halfKick(Ephemeris &current, Ephemeris &next, double dt);
 
 void stepDirect(Ephemeris &current, Ephemeris &next, double dt);
 void stepBH(Ephemeris &current, Ephemeris &next, double dt);

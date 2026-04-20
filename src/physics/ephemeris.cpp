@@ -202,83 +202,49 @@ void physics::computeAccelBH(Ephemeris &s) {
     std::fill(s.az.begin(), s.az.end(), 0.0);
 
 #ifdef ENABLE_OMP
-    #pragma omp parallel for schedule(dynamic, 64)
+    #pragma omp parallel for schedule(static)
 #endif
     for (size_t i = 0; i < s.n; ++i) {
         tree.computeAccelIt(i, BH_THETA);
     }
 }
 
-void physics::integrateSingle(Ephemeris &current, Ephemeris &next, double dt, size_t b_idx) {
-    // Kick (Update velocity by half-step)
-    double vx_half = current.vx[b_idx] + 0.5 * current.ax[b_idx] * dt;
-    double vy_half = current.vy[b_idx] + 0.5 * current.ay[b_idx] * dt;
-    double vz_half = current.vz[b_idx] + 0.5 * current.az[b_idx] * dt;
-
-    // Drift (Update position using half-step velocity)
-    next.x[b_idx] = current.x[b_idx] + vx_half * dt;
-    next.y[b_idx] = current.y[b_idx] + vy_half * dt;
-    next.z[b_idx] = current.z[b_idx] + vz_half * dt;
-
-    // Copy static data
-    next.mass[b_idx] = current.mass[b_idx];
-
-    // Final Kick happens in next step once new forces are computed
-    next.vx[b_idx] = vx_half; 
-    next.vy[b_idx] = vy_half;
-    next.vz[b_idx] = vz_half;
-
-    if (std::isnan(next.x[b_idx])) std::cout << "EXPLOSION!" << '\n';
-}
-
 void physics::integrate(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+#ifdef ENABLE_OMP
+    #pragma omp parallel for schedule(static)
+#endif
     for (size_t i = 0; i < current.n; ++i) {
-        integrateSingle(current, next, dt, i);
+        // kick
+        // v(t + dt/2) (half-step velocity)
+        next.vx[i] = current.vx[i] + 0.5 * current.ax[i] * dt;
+        next.vy[i] = current.vy[i] + 0.5 * current.ay[i] * dt;
+        next.vz[i] = current.vz[i] + 0.5 * current.az[i] * dt;
+
+        // drift (update position using half-step velocity)
+        next.x[i] = current.x[i] + next.vx[i];
+        next.y[i] = current.y[i] + next.vy[i];
+        next.z[i] = current.z[i] + next.vz[i];
+
+        next.mass[i] = current.mass[i];
     }
 }
 
-void integrateMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    std::vector<size_t> indices(current.n);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
-        integrateSingle(current, next, dt, i);
-    });
-}
-
-void physics::finalKickSingle(physics::Ephemeris &current, physics::Ephemeris &next, double dt, size_t b_idx) {
-    next.vx[b_idx] += 0.5 * next.ax[b_idx] * dt;
-    next.vy[b_idx] += 0.5 * next.ay[b_idx] * dt;
-    next.vz[b_idx] += 0.5 * next.az[b_idx] * dt;
-}
-
-void physics::finalKick(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+void physics::halfKick(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
+#ifdef ENABLE_OMP
+    #pragma omp parallel for schedule(static)
+#endif
     for (size_t i = 0; i < current.n; ++i) {
-        finalKickSingle(current, next, dt, i);
+        next.vx[i] += 0.5 * next.ax[i] * dt;
+        next.vy[i] += 0.5 * next.ay[i] * dt;
+        next.vz[i] += 0.5 * next.az[i] * dt;
     }
-}
-void finalKickMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    std::vector<size_t> indices(current.n);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    std::for_each(std::execution::par_unseq, indices.begin(), indices.end(), [&](size_t i) {
-        finalKickSingle(current, next, dt, i);
-    });
 }
 
 void physics::stepDirect(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
     computeAccelDirect(current);
     integrate(current, next, dt);
     computeAccelDirect(next);
-    finalKick(current, next, dt);
-    std::swap(current, next);
-}
-
-void stepDirectMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeAccelDirect(current);
-    integrateMT(current, next, dt);
-    computeAccelDirect(next);
-    finalKickMT(current, next, dt);
+    halfKick(current, next, dt);
     std::swap(current, next);
 }
 
@@ -287,16 +253,7 @@ void physics::stepBH(physics::Ephemeris &current, physics::Ephemeris &next, doub
     computeAccelBH(current);
     integrate(current, next, dt);
     computeAccelBH(next);
-    finalKick(current, next, dt);
-    std::swap(current, next);
-}
-
-void stepBHMT(physics::Ephemeris &current, physics::Ephemeris &next, double dt) {
-    computeBounds(current);
-    computeAccelBH(current);
-    integrateMT(current, next, dt);
-    computeAccelBH(next);
-    finalKickMT(current, next, dt);
+    halfKick(current, next, dt);
     std::swap(current, next);
 }
 
