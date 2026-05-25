@@ -15,9 +15,9 @@ void integrators::LeapFrogTBB::preForceUpdate(physics::Ephemeris &current,
             next.vy[i] = current.vy[i] + 0.5 * current.ay[i] * dt;
             next.vz[i] = current.vz[i] + 0.5 * current.az[i] * dt;
 
-            next.x[i] = current.x[i] + next.vx[i];
-            next.y[i] = current.y[i] + next.vy[i];
-            next.z[i] = current.z[i] + next.vz[i];
+            next.x[i] = current.x[i] + next.vx[i] * dt;
+            next.y[i] = current.y[i] + next.vy[i] * dt;
+            next.z[i] = current.z[i] + next.vz[i] * dt;
 
             next.mass[i] = current.mass[i];
         }
