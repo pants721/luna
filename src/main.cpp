@@ -1,8 +1,12 @@
 #include <cstdlib>
 #include <immintrin.h>
 
+#include "barnes_hut_tbb.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
+#include "direct_openmp.hpp"
+#include "sim/luna_engine.hpp"
+#include "solvers/barnes_hut_openmp.hpp"
 #include "physics/ephemeris.hpp"
 #include "gfx/renderer.hpp"
 #include "cfg/sim_config.hpp"
@@ -50,9 +54,7 @@ int guiMain() {
     // load config
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
-    // set up bodies
-    physics::Ephemeris current(sim_config);
-    physics::Ephemeris next(sim_config.num_bodies);
+    sim::LunaEngine<solvers::BarnesHutTBB> luna(sim_config);
 
     float last_frame = glfwGetTime();
 
@@ -63,14 +65,14 @@ int guiMain() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        sim::step<sim::force_policy::BarnesHut>(current, next, TIME_STEP);
+        luna.step(TIME_STEP);
 
         // clear screen
         renderer.clear();
 
         // draw particles
-        renderer.render(current, cam);
-        renderer.draw(current, cam);
+        renderer.render(luna.current, cam);
+        renderer.draw(luna.current, cam);
 
         // swap buffers
         glfwSwapBuffers(renderer.opengl_data.window);

@@ -18,6 +18,7 @@ find_package(OpenMP REQUIRED)
 include_directories(include)
 include_directories(include/gfx)
 include_directories(include/physics)
+include_directories(include/solvers)
 include_directories(include/sim)
 include_directories(include/cfg)
 
@@ -28,6 +29,13 @@ add_executable(luna
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
         src/sim/step.cpp
+        src/sim/luna_engine.cpp
+        src/solvers/barnes_hut_openmp.cpp
+        src/solvers/barnes_hut_single_threaded.cpp
+        src/solvers/barnes_hut_tbb.cpp
+        src/solvers/direct_openmp.cpp
+        src/solvers/direct_single_threaded.cpp
+        src/solvers/direct_tbb.cpp
         src/physics/octree.cpp
         src/physics/ephemeris.cpp)
 
