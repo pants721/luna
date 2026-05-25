@@ -29,4 +29,5 @@ constexpr float WIN_CENTER_X = (WIN_W / 2.0f);
 constexpr float WIN_CENTER_Y = (WIN_H / 2.0f);
 constexpr auto WIN_TITLE = "Luna - LUcas N-body Analyzer";
 
-constexpr auto DEFAULT_CONFIG_PATH = "config.json";
+// constexpr auto DEFAULT_CONFIG_PATH = "config.json";
+constexpr auto DEFAULT_CONFIG_PATH = "cluster_collapse.json";
