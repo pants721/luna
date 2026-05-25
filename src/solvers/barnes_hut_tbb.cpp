@@ -72,13 +72,14 @@ void solvers::BarnesHutTBB::computeBounds(physics::Ephemeris &s) {
 }
 
 void solvers::BarnesHutTBB::computeAccel(physics::Ephemeris &s) {
-    physics::Octree tree = physics::Octree(&s);
+    tree.reset();
+    tree.eph = &s;
     tree.build();
     tree.computeMass();
     resetAccel(s);
     
     tbb::parallel_for(tbb::blocked_range<size_t>(0, s.n),
-        [this, &tree](const tbb::blocked_range<size_t>& range) {
+        [this](const tbb::blocked_range<size_t>& range) {
             for (size_t i = range.begin(); i != range.end(); ++i) {
                 tree.computeAccelIt(i, theta);
             }

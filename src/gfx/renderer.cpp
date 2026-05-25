@@ -40,8 +40,6 @@ void gfx::Renderer::setup() {
     glDepthMask(GL_FALSE);
 
     glViewport(0, 0, WIN_W, WIN_H);
-
-    glEnable(GL_PROGRAM_POINT_SIZE);
     opengl_data.loadShadersFromFiles(VERTEX_SHADER, FRAG_SHADER);
     opengl_data.createVertexObjects();
 }
@@ -53,27 +51,22 @@ void gfx::Renderer::clear() {
 
 void gfx::Renderer::render(physics::Ephemeris &world, Camera &cam) {
     for (int i = 0; i < world.n; i++) {
-        opengl_data.vbo_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
-        opengl_data.vbo_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
-        opengl_data.vbo_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
+        opengl_data.cpu_buffer[i * 3 + 0] = static_cast<float>(world.x[i] / 200);
+        opengl_data.cpu_buffer[i * 3 + 1] = static_cast<float>(world.y[i] / 200);
+        opengl_data.cpu_buffer[i * 3 + 2] = static_cast<float>(world.z[i] / 200);
     }
+    glBindBuffer(GL_ARRAY_BUFFER, opengl_data.vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, world.n * 3 * sizeof(float), opengl_data.cpu_buffer.data());
 }
 
 void gfx::Renderer::draw(physics::Ephemeris &world, Camera &cam) {
-    glUseProgram(opengl_data.shader_program);
-
     glm::mat4 cam_view = cam.viewMat();
     glm::mat4 cam_proj = cam.projectionMat();
     glm::mat4 model = glm::mat4(1.0f);
 
-    GLuint view_loc = glGetUniformLocation(opengl_data.shader_program, "uView");
-    glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(cam_view));
-
-    GLuint proj_loc = glGetUniformLocation(opengl_data.shader_program, "uProjection");
-    glUniformMatrix4fv(proj_loc, 1, GL_FALSE, glm::value_ptr(cam_proj));
-
-    GLuint model_loc = glGetUniformLocation(opengl_data.shader_program, "uModel");
-    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(opengl_data.loc_view,  1, GL_FALSE, glm::value_ptr(cam_view));
+    glUniformMatrix4fv(opengl_data.loc_proj,  1, GL_FALSE, glm::value_ptr(cam_proj));
+    glUniformMatrix4fv(opengl_data.loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(opengl_data.vao);
     glDrawArrays(GL_POINTS, 0, world.n);
@@ -85,25 +78,14 @@ void gfx::OpenGLData::createVertexObjects() {
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferStorage(GL_ARRAY_BUFFER,
-                    MAX_BODIES * 3 * sizeof(float),
-                    nullptr,
-                    GL_MAP_WRITE_BIT |
-                    GL_MAP_PERSISTENT_BIT |
-                    GL_MAP_COHERENT_BIT);
-
-    // XXX: maybe replace 3 with DIM constant
     glBufferData(GL_ARRAY_BUFFER, MAX_BODIES * 3 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    
+
     glBindVertexArray(0);
 
-    vbo_buffer = (float *) glMapBufferRange(GL_ARRAY_BUFFER,
-                                            0,
-                                            MAX_BODIES * 3 * sizeof(float),
-                                            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    cpu_buffer.resize(MAX_BODIES * 3);
 }
 
 static std::string readShaderSource(const std::string& filePath) {
@@ -184,6 +166,11 @@ void gfx::OpenGLData::loadShaders(const char *vertex_shader_src, const char *fra
 
     // use shader program
     glUseProgram(shader_program);
+
+    // cache uniform locations
+    loc_view  = glGetUniformLocation(shader_program, "uView");
+    loc_proj  = glGetUniformLocation(shader_program, "uProjection");
+    loc_model = glGetUniformLocation(shader_program, "uModel");
 
     // delete shaders
     glDeleteShader(vertex_shader);

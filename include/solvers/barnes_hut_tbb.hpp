@@ -1,11 +1,12 @@
 #pragma once
 
 #include "physics/ephemeris.hpp"
+#include "physics/octree.hpp"
 
 namespace solvers {
 
 class BarnesHutTBB {
-private:   
+private:
     double theta = 0.5;
 
     double max_x = -std::numeric_limits<double>::infinity();
@@ -15,7 +16,9 @@ private:
     double min_x = std::numeric_limits<double>::infinity();
     double min_y = std::numeric_limits<double>::infinity();
     double min_z = std::numeric_limits<double>::infinity();
-     
+
+    physics::Octree tree;
+
     void resetAccel(physics::Ephemeris &s);
 public:
     void computeBounds(physics::Ephemeris &s);

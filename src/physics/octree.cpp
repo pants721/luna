@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <cmath>
 #include <oneapi/tbb/partitioner.h>
-#include <stack>
+#include <vector>
 
-physics::Octree::Node::Node(double x, double y, double z, double w) 
+physics::Octree::Node::Node(double x, double y, double z, double w)
     : x(x), y(y), z(z), 
     width(w),
     body_idx(-1) {
@@ -23,7 +23,12 @@ inline bool physics::Octree::Node::isEmpty() const {
     return body_idx == -1;
 }
 
-physics::Octree::Octree(physics::Ephemeris *eph) : eph(eph) {}
+physics::Octree::Octree(physics::Ephemeris *eph) : eph(eph), root_idx(-1) {}
+
+void physics::Octree::reset() {
+    nodes.clear();
+    root_idx = -1;
+}
 
 void physics::Octree::divide(int node_idx) {
     Node &node = nodes[node_idx];
@@ -213,18 +218,17 @@ void physics::Octree::computeAccel(int node_idx, int b_idx, double theta) {
 }
 
 void physics::Octree::computeAccelIt(int b_idx, double theta) {
-    // TODO: replace with native array
-    std::stack<int> node_stack;
-    node_stack.push(root_idx);
+    std::vector<int> node_stack;
+    node_stack.reserve(128);
+    node_stack.push_back(root_idx);
 
     double delta_ax = 0.0;
     double delta_ay = 0.0;
     double delta_az = 0.0;
 
     while (!node_stack.empty()) {
-        // get node to process
-        int node_idx = node_stack.top();
-        node_stack.pop();
+        int node_idx = node_stack.back();
+        node_stack.pop_back();
         Node &node = nodes[node_idx];
         
         double jx, jy, jz;
@@ -260,7 +264,7 @@ void physics::Octree::computeAccelIt(int b_idx, double theta) {
             for (int i = 0; i < 8; ++i) {
                 int child_idx = node.children[i];
                 if (child_idx != -1) {
-                    node_stack.push(child_idx);
+                    node_stack.push_back(child_idx);
                 }
             }
         }

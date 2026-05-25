@@ -22,7 +22,9 @@ namespace gfx {
 struct OpenGLData {
     unsigned int shader_program;
     GLuint vao, vbo;
-    float *vbo_buffer;
+    std::vector<float> cpu_buffer;
+
+    GLint loc_view, loc_proj, loc_model;
 
     GLFWwindow *window;
 

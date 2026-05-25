@@ -28,6 +28,7 @@ struct Octree {
 
     Ephemeris *eph;
 
+    Octree() : eph(nullptr), root_idx(-1) {}
     Octree(Ephemeris *eph);
 
     void divide(int node_idx);
