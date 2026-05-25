@@ -1,14 +1,18 @@
 #include <cstdlib>
 #include <immintrin.h>
 
+#include "barnes_hut_tbb.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
+#include "leapfrog_tbb.hpp"
+#include "luna_engine.hpp"
 #include "physics/ephemeris.hpp"
 #include "gfx/renderer.hpp"
 #include "cfg/sim_config.hpp"
 
 #include <GLFW/glfw3.h>
 #include <string>
+#include <omp.h>
 
 void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     using namespace gfx;
@@ -46,9 +50,7 @@ int guiMain() {
     // load config
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
-    // set up bodies
-    physics::Ephemeris current(sim_config);
-    physics::Ephemeris next(sim_config.num_bodies);
+    sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
     float last_frame = glfwGetTime();
 
@@ -59,14 +61,15 @@ int guiMain() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
-        physics::stepBHMT(current, next, TIME_STEP);
+        // physics step
+        luna.step(TIME_STEP);
 
         // clear screen
         renderer.clear();
 
         // draw particles
-        renderer.render(current, cam);
-        renderer.draw(current, cam);
+        renderer.render(luna.current, cam);
+        renderer.draw(luna.current, cam);
 
         // swap buffers
         glfwSwapBuffers(renderer.opengl_data.window);
@@ -85,14 +88,13 @@ int noGuiMain() {
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
     // set up bodies
-    physics::Ephemeris current(sim_config);
-    physics::Ephemeris next(sim_config.num_bodies);
+    sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
     int steps = 0;
     int max_steps = 100;
 
     while (steps < max_steps) {
-        physics::stepBHMT(current, next, TIME_STEP);
+        luna.step(TIME_STEP);
         steps++;
     }
 

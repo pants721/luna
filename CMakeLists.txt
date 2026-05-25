@@ -13,18 +13,30 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(TBB REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
+find_package(OpenMP REQUIRED)
 
 include_directories(include)
 include_directories(include/gfx)
 include_directories(include/physics)
+include_directories(include/solvers)
+include_directories(include/integrators)
 include_directories(include/cfg)
 
 add_executable(luna
         src/main.cpp
+        src/luna_engine.cpp
         src/cfg/sim_config.cpp
         src/cfg/rand_config.cpp
         src/gfx/renderer.cpp
         src/gfx/camera.cpp
+        src/solvers/barnes_hut_openmp.cpp
+        src/solvers/barnes_hut_single_threaded.cpp
+        src/solvers/barnes_hut_tbb.cpp
+        src/solvers/direct_openmp.cpp
+        src/solvers/direct_single_threaded.cpp
+        src/solvers/direct_tbb.cpp
+        src/integrators/leapfrog_openmp.cpp
+        src/integrators/leapfrog_tbb.cpp
         src/physics/octree.cpp
         src/physics/ephemeris.cpp)
 
@@ -39,6 +51,9 @@ target_link_libraries(luna
     glm::glm
     reflectcpp::reflectcpp
 )
+
+target_link_libraries(luna PUBLIC OpenMP::OpenMP_CXX)
+
 target_link_libraries(luna PRIVATE TBB::tbb)
 
 target_compile_options(luna PRIVATE -ltbb)
