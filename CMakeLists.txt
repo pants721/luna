@@ -56,7 +56,16 @@ target_link_libraries(luna PUBLIC OpenMP::OpenMP_CXX)
 
 target_link_libraries(luna PRIVATE TBB::tbb)
 
-target_compile_options(luna PRIVATE -ltbb)
+target_compile_options(luna 
+    PRIVATE 
+    -ltbb
+    -O3
+    -march=native
+    -ffast-math
+    -flto
+    -fno-signed-zeros
+    -fomit-frame-pointer
+)
 
 find_program(CPPCHECK_EXE NAMES cppcheck)
 
