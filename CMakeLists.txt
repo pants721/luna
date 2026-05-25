@@ -19,6 +19,7 @@ include_directories(include)
 include_directories(include/gfx)
 include_directories(include/physics)
 include_directories(include/solvers)
+include_directories(include/integrators)
 include_directories(include/sim)
 include_directories(include/cfg)
 
@@ -36,6 +37,8 @@ add_executable(luna
         src/solvers/direct_openmp.cpp
         src/solvers/direct_single_threaded.cpp
         src/solvers/direct_tbb.cpp
+        src/integrators/leapfrog_openmp.cpp
+        src/integrators/leapfrog_tbb.cpp
         src/physics/octree.cpp
         src/physics/ephemeris.cpp)
 

@@ -2,14 +2,14 @@
 
 #include "ephemeris.hpp"
 #include "sim_config.hpp"
-#include "step.hpp"
 #include <utility>
 namespace sim {
 
-template<typename Solver>
+template<typename Solver, typename Integrator>
 class LunaEngine {
 protected:
     Solver solver;
+    Integrator integrator;
 
     physics::Ephemeris next;
 public:
@@ -20,11 +20,10 @@ public:
     void step(double dt) {
         solver.computeBounds(current);
         solver.computeAccel(current);
-        integrate(current, next, dt);
+        integrator.preForceUpdate(current, next, dt);
         solver.computeAccel(next);
-        halfKick(current, next, dt);
+        integrator.postForceUpdate(current, next, dt);
         std::swap(current, next);
-
     }
 };
 

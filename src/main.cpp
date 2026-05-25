@@ -5,6 +5,8 @@
 #include "camera.hpp"
 #include "constants.hpp"
 #include "direct_openmp.hpp"
+#include "integrators/leapfrog_openmp.hpp"
+#include "leapfrog_tbb.hpp"
 #include "sim/luna_engine.hpp"
 #include "solvers/barnes_hut_openmp.hpp"
 #include "physics/ephemeris.hpp"
@@ -54,7 +56,7 @@ int guiMain() {
     // load config
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
-    sim::LunaEngine<solvers::BarnesHutTBB> luna(sim_config);
+    sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
     float last_frame = glfwGetTime();
 
@@ -65,6 +67,7 @@ int guiMain() {
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
+        // physics step
         luna.step(TIME_STEP);
 
         // clear screen
