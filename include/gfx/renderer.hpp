@@ -5,35 +5,48 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
 #include <string>
 #include <vector>
 
-#define VERTEX_SHADER "shaders/vertex.glsl"
-#define FRAG_SHADER "shaders/frag.glsl"
+#define PARTICLE_VERT  "shaders/particle.vert"
+#define PARTICLE_FRAG  "shaders/particle.frag"
+#define SCREEN_VERT    "shaders/screen.vert"
+#define BLUR_FRAG      "shaders/blur.frag"
+#define COMPOSITE_FRAG "shaders/composite.frag"
 
 namespace gfx {
 
-// enum GraphicsBackend {
-//     OPENGL = 0,
-// };
-
-// OPENGL STUFF
 struct OpenGLData {
-    unsigned int shader_program;
-    GLuint vao, vbo;
-    std::vector<float> cpu_buffer;
-
-    GLint loc_view, loc_proj, loc_model;
-
     GLFWwindow *window;
 
+    // Particle pass
+    GLuint particle_program;
+    GLuint vao, vbo;
+    std::vector<float> cpu_buffer;
+    GLint loc_view, loc_proj, loc_model;
+
+    // Blur pass
+    GLuint blur_program;
+    GLint loc_blur_image, loc_blur_horizontal;
+
+    // Composite pass
+    GLuint composite_program;
+    GLint loc_comp_scene, loc_comp_bloom;
+
+    // Fullscreen quad
+    GLuint quad_vao, quad_vbo;
+
+    // Framebuffers
+    GLuint hdr_fbo, hdr_texture;
+    GLuint pingpong_fbo[2], pingpong_texture[2];
+
+    GLuint buildProgram(const std::string &vert_path, const std::string &frag_path);
+    void createParticleProgram();
+    void createBlurProgram();
+    void createCompositeProgram();
     void createVertexObjects();
-    void loadShadersFromFiles(const std::string vertex_shader_path, const std::string frag_shader_path);
-    void loadShaders(const char *vertex_shader_src, const char *frag_shader_src);
-
-    void uploadVertices(std::vector<float> &packed);
-
+    void createQuad();
+    void createFramebuffers();
 };
 
 struct Renderer {

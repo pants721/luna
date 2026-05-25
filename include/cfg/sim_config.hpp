@@ -16,6 +16,7 @@ struct SimConfig {
     std::optional<RandConfig> random_config;
 
     static SimConfig load(std::string file_path);
+    static SimConfig default_cfg();
     bool save(std::string file_path);
 };
 

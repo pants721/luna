@@ -42,15 +42,12 @@ void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     }
 }
 
-int guiMain() {
+int guiMain(cfg::SimConfig sim_config) {
     // renderer
     gfx::Renderer renderer;
     renderer.setup();
 
     gfx::Camera cam;
-
-    // load config
-    cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
     sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
@@ -98,10 +95,7 @@ int guiMain() {
     return EXIT_SUCCESS;
 }
 
-int noGuiMain() {
-    // load config
-    cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
-
+int noGuiMain(cfg::SimConfig sim_config) {
     // set up bodies
     sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
@@ -117,14 +111,21 @@ int noGuiMain() {
 }
 
 int main(int argc, char *argv[]) {
+    cfg::SimConfig sim_config;
     if (argc > 1) {
-        std::string mode = argv[1];
-
-        if (mode == "gui") {
-            return guiMain();
-        }
+        sim_config = cfg::SimConfig::load(argv[1]);
+    } else {
+        sim_config = cfg::SimConfig::default_cfg();
     }
 
+    #ifdef LUNA_GUI
+
+    return guiMain(sim_config);
+
+    #else
+
     // no gui mode
-    return noGuiMain();
+    return noGuiMain(sim_config);
+
+    #endif
 }
