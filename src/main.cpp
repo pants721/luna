@@ -4,21 +4,15 @@
 #include "barnes_hut_tbb.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
-#include "direct_openmp.hpp"
-#include "integrators/leapfrog_openmp.hpp"
 #include "leapfrog_tbb.hpp"
-#include "sim/luna_engine.hpp"
-#include "solvers/barnes_hut_openmp.hpp"
+#include "luna_engine.hpp"
 #include "physics/ephemeris.hpp"
 #include "gfx/renderer.hpp"
 #include "cfg/sim_config.hpp"
-#include "sim/step.hpp"
 
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <string>
 #include <omp.h>
-#include <thread>
 
 void processInput(GLFWwindow* window, gfx::Camera &cam, float delta_time) {
     using namespace gfx;
@@ -94,14 +88,13 @@ int noGuiMain() {
     cfg::SimConfig sim_config = cfg::SimConfig::load(DEFAULT_CONFIG_PATH);
 
     // set up bodies
-    physics::Ephemeris current(sim_config);
-    physics::Ephemeris next(sim_config.num_bodies);
+    sim::LunaEngine<solvers::BarnesHutTBB, integrators::LeapFrogTBB> luna(sim_config);
 
     int steps = 0;
     int max_steps = 100;
 
     while (steps < max_steps) {
-        sim::step<sim::force_policy::BarnesHut>(current, next, TIME_STEP);
+        luna.step(TIME_STEP);
         steps++;
     }
 
