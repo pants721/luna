@@ -218,19 +218,24 @@ void physics::Octree::computeAccel(int node_idx, int b_idx, double theta) {
 }
 
 void physics::Octree::computeAccelIt(int b_idx, double theta) {
-    std::vector<int> node_stack;
-    node_stack.reserve(128);
+    thread_local std::vector<int> node_stack;
+    node_stack.clear();
     node_stack.push_back(root_idx);
 
     double delta_ax = 0.0;
     double delta_ay = 0.0;
     double delta_az = 0.0;
 
+    const double theta_sq = theta * theta;
+    const double bx = eph->x[b_idx];
+    const double by = eph->y[b_idx];
+    const double bz = eph->z[b_idx];
+
     while (!node_stack.empty()) {
         int node_idx = node_stack.back();
         node_stack.pop_back();
-        Node &node = nodes[node_idx];
-        
+        const Node &node = nodes[node_idx];
+
         double jx, jy, jz;
         if (node.isLeaf()) {
             if (node.body_idx == -1 || node.body_idx == b_idx) continue;
@@ -243,24 +248,21 @@ void physics::Octree::computeAccelIt(int b_idx, double theta) {
             jz = node.com_z;
         }
 
-        double dx = jx - eph->x[b_idx];
-        double dy = jy - eph->y[b_idx];
-        double dz = jz - eph->z[b_idx];
+        const double dx = jx - bx;
+        const double dy = jy - by;
+        const double dz = jz - bz;
+        const double dist_sq = dx * dx + dy * dy + dz * dz + SOFTENING;
 
-        double dist_sq = dx * dx + dy * dy + dz * dz + SOFTENING;
-        double dist = std::sqrt(dist_sq);
-        double curr_theta = node.width / dist;
-
-        // node is far enough
-        if (curr_theta <= theta || node.isLeaf()) {
-            double inv_dist = 1.0 / dist;
-            double inv_dist_cub = inv_dist * inv_dist * inv_dist;
-            double common_factor = G * node.total_mass * inv_dist_cub;
+        // avoid sqrt: width/dist <= theta  <=>  width^2 <= theta^2 * dist_sq
+        if (node.width * node.width <= theta_sq * dist_sq || node.isLeaf()) {
+            const double inv_dist = 1.0 / std::sqrt(dist_sq);
+            const double inv_dist_cub = inv_dist * inv_dist * inv_dist;
+            const double common_factor = G * node.total_mass * inv_dist_cub;
 
             delta_ax += dx * common_factor;
             delta_ay += dy * common_factor;
             delta_az += dz * common_factor;
-        } else { // node is too close
+        } else {
             for (int i = 0; i < 8; ++i) {
                 int child_idx = node.children[i];
                 if (child_idx != -1) {

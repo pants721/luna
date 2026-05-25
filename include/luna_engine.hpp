@@ -10,6 +10,7 @@ class LunaEngine {
 protected:
     Solver solver;
     Integrator integrator;
+    bool first_step = true;
 
     physics::Ephemeris next;
 public:
@@ -19,8 +20,14 @@ public:
 
     void step(double dt) {
         solver.computeBounds(current);
-        solver.computeAccel(current);
+        // a(x_n) was already computed as a(x_{n+1}) at the end of the previous
+        // step — skip the redundant force evaluation every step after the first.
+        if (first_step) {
+            solver.computeAccel(current);
+            first_step = false;
+        }
         integrator.preForceUpdate(current, next, dt);
+        solver.computeBounds(next);
         solver.computeAccel(next);
         integrator.postForceUpdate(current, next, dt);
         std::swap(current, next);

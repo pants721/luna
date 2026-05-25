@@ -77,7 +77,7 @@ void solvers::BarnesHutTBB::computeAccel(physics::Ephemeris &s) {
     tree.build();
     tree.computeMass();
     resetAccel(s);
-    
+
     tbb::parallel_for(tbb::blocked_range<size_t>(0, s.n),
         [this](const tbb::blocked_range<size_t>& range) {
             for (size_t i = range.begin(); i != range.end(); ++i) {
