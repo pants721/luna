@@ -56,10 +56,23 @@ int guiMain() {
 
     float last_frame = glfwGetTime();
 
+    float fps_accum = 0.0f;
+    int fps_frames = 0;
+
     while (!glfwWindowShouldClose(renderer.opengl_data.window)) {
         float current_frame = glfwGetTime();
         float delta_time = current_frame - last_frame;
         last_frame = current_frame;
+
+        fps_accum += delta_time;
+        fps_frames++;
+        if (fps_accum >= 0.25f) {
+            int fps = static_cast<int>(fps_frames / fps_accum);
+            std::string title = std::string(WIN_TITLE) + "  |  " + std::to_string(fps) + " FPS";
+            glfwSetWindowTitle(renderer.opengl_data.window, title.c_str());
+            fps_accum  = 0.0f;
+            fps_frames = 0;
+        }
 
         processInput(renderer.opengl_data.window, cam, delta_time);
 
