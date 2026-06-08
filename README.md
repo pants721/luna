@@ -9,7 +9,7 @@
 
 <img width="480" height="360" alt="demo1_small" src="https://github.com/user-attachments/assets/f3767d47-2c35-4403-99e8-3f530b413ac6" />
 
-[Full quality video demo](https://www.youtube.com/embed/Y13p_DaeD6w)
+[Full quality video demo](https://youtu.be/Y13p_DaeD6w?si=TXdJW2_Yg9dYYGFU)
 
 *10,000 Bodies running at ~160 FPS*
 
