@@ -15,7 +15,7 @@ struct CameraConfig {
 
     CameraConfig() : 
         rot_speed(0.5),
-        move_speed(10.0),
+        move_speed(5.0),
         fov(45.0)
     {}
 };
