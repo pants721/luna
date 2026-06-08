@@ -2,6 +2,7 @@
 #include "ephemeris.hpp"
 #include "octree.hpp"
 
+#include <algorithm>
 #include <tbb/tbb.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>

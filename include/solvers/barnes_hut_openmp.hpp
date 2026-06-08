@@ -1,5 +1,6 @@
 #pragma once
 
+#include "constants.hpp"
 #include "physics/octree.hpp"
 #include "physics/ephemeris.hpp"
 
@@ -7,7 +8,7 @@ namespace solvers {
 
 class BarnesHutOpenMP {
 private:
-    double theta = 0.5;
+    double theta = BH_THETA;
 
     double max_x = -std::numeric_limits<double>::infinity();
     double max_y = -std::numeric_limits<double>::infinity();

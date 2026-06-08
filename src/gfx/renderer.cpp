@@ -10,8 +10,6 @@
 
 using namespace gfx;
 
-// ---- helpers ----------------------------------------------------------------
-
 static std::string readFile(const std::string &path) {
     std::ifstream f(path);
     if (!f.is_open()) {
@@ -58,8 +56,6 @@ GLuint OpenGLData::buildProgram(const std::string &vert_path, const std::string 
     return prog;
 }
 
-// ---- program setup ----------------------------------------------------------
-
 void OpenGLData::createParticleProgram() {
     particle_program = buildProgram(PARTICLE_VERT, PARTICLE_FRAG);
     loc_view  = glGetUniformLocation(particle_program, "uView");
@@ -78,8 +74,6 @@ void OpenGLData::createCompositeProgram() {
     loc_comp_scene    = glGetUniformLocation(composite_program, "uScene");
     loc_comp_bloom    = glGetUniformLocation(composite_program, "uBloom");
 }
-
-// ---- geometry setup ---------------------------------------------------------
 
 void OpenGLData::createVertexObjects() {
     glGenVertexArrays(1, &vao);
@@ -118,8 +112,6 @@ void OpenGLData::createQuad() {
     glBindVertexArray(0);
 }
 
-// ---- framebuffer setup ------------------------------------------------------
-
 static GLuint makeHDRTexture(int w, int h) {
     GLuint tex;
     glGenTextures(1, &tex);
@@ -153,8 +145,6 @@ void OpenGLData::createFramebuffers() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-// ---- public api -------------------------------------------------------------
-
 void Renderer::setup() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -164,6 +154,7 @@ void Renderer::setup() {
     opengl_data.window = glfwCreateWindow(WIN_W, WIN_H, WIN_TITLE, nullptr, nullptr);
     glfwSetWindowAttrib(opengl_data.window, GLFW_FLOATING, GLFW_TRUE);
     glfwMakeContextCurrent(opengl_data.window);
+    glfwSwapInterval(1);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -194,7 +185,6 @@ void Renderer::render(physics::Ephemeris &world, Camera &cam) {
 }
 
 void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
-    // ---- Pass 1: particles → HDR FBO (additive blend) ----------------------
     glBindFramebuffer(GL_FRAMEBUFFER, opengl_data.hdr_fbo);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -210,7 +200,6 @@ void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
     glBindVertexArray(opengl_data.vao);
     glDrawArrays(GL_POINTS, 0, world.n);
 
-    // ---- Pass 2: ping-pong Gaussian blur ------------------------------------
     glDisable(GL_BLEND);
     glUseProgram(opengl_data.blur_program);
     glBindVertexArray(opengl_data.quad_vao);
@@ -239,9 +228,7 @@ void Renderer::draw(physics::Ephemeris &world, Camera &cam) {
         glDrawArrays(GL_TRIANGLES, 0, 6);
         horizontal = !horizontal;
     }
-    // After 10 passes (even), last write was to pingpong_fbo[1] → bloom in pingpong_texture[1]
 
-    // ---- Pass 3: composite (HDR + bloom) → screen --------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
