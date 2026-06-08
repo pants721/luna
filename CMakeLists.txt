@@ -35,6 +35,7 @@ set(LUNA_CORE_SOURCES
     src/solvers/direct_single_threaded.cpp
     src/solvers/direct_tbb.cpp
     src/integrators/leapfrog_openmp.cpp
+    src/integrators/leapfrog_single_threaded.cpp
     src/integrators/leapfrog_tbb.cpp
     src/physics/octree.cpp
     src/physics/ephemeris.cpp
