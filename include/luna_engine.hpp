@@ -7,15 +7,16 @@ namespace sim {
 
 template<typename Solver, typename Integrator>
 class LunaEngine {
+public:
+    physics::Ephemeris current;
+
 protected:
     Solver solver;
     Integrator integrator;
     bool first_step = true;
-
     physics::Ephemeris next;
-public:
-    physics::Ephemeris current;
 
+public:
     LunaEngine(cfg::SimConfig cfg) : current(cfg), next(current.n) {}
 
     void step(double dt) {
