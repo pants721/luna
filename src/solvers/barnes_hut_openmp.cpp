@@ -47,8 +47,8 @@ void solvers::BarnesHutOpenMP::computeBounds(physics::Ephemeris &s) {
 }
 
 void solvers::BarnesHutOpenMP::computeAccel(physics::Ephemeris &s) {
-    physics::Octree tree = physics::Octree(&s);
-
+    tree.reset();
+    tree.eph = &s;
     tree.build();
     tree.computeMass();
 

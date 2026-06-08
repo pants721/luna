@@ -16,7 +16,7 @@ protected:
 public:
     physics::Ephemeris current;
 
-    LunaEngine(cfg::SimConfig cfg) : current(cfg), next(cfg.num_bodies) {}
+    LunaEngine(cfg::SimConfig cfg) : current(cfg), next(current.n) {}
 
     void step(double dt) {
         solver.computeBounds(current);

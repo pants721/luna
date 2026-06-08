@@ -1,10 +1,12 @@
 #include <cstdlib>
 #include <immintrin.h>
 
+#include "barnes_hut_single_threaded.hpp"
 #include "barnes_hut_tbb.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
 #include "direct_openmp.hpp"
+#include "direct_single_threaded.hpp"
 #include "direct_tbb.hpp"
 #include "leapfrog_tbb.hpp"
 #include "luna_engine.hpp"

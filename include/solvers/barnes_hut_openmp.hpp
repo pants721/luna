@@ -18,6 +18,8 @@ private:
     double min_y = std::numeric_limits<double>::infinity();
     double min_z = std::numeric_limits<double>::infinity();
      
+    physics::Octree tree;
+
     void resetAccel(physics::Ephemeris &s);
 public:
     void computeBounds(physics::Ephemeris &s);

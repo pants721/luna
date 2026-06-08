@@ -1,5 +1,5 @@
 {
-    "num_bodies": 10000,
+    "num_bodies": 50000,
     "random_config": {
         "mass_range": [
             100.0,
