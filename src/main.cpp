@@ -74,7 +74,7 @@ int guiMain(cfg::SimConfig sim_config) {
         processInput(renderer.opengl_data.window, cam, delta_time);
 
         // physics step
-        luna.step(TIME_STEP);
+        luna.step(TIME_STEP * delta_time);
 
         // clear screen
         renderer.clear();
